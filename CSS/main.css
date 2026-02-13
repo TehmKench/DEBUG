@@ -1,0 +1,7 @@
+/* Importar todos los estilos */
+@import 'base/_variables.css';
+@import 'base/_reset.css';
+@import 'components/_terminal.css';
+@import 'components/_buttons.css';
+@import 'components/_doors.css';
+@import 'components/_animations.css';

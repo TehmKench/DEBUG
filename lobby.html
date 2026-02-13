@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEBUG - Escape Room</title>
+    
+    <!-- Importar CSS principal -->
+    <link rel="stylesheet" href="CCS/main.css">
+</head>
+<body>
+    <!-- Efecto de estática de fondo -->
+    <div class="static-overlay"></div>
+    
+    <!-- ===== CÓDIGO ANIMADO EXTERIOR ===== -->
+    <div class="code-rain" id="codeRain"></div>
+    
+    <!-- ===== PANTALLA INICIAL ===== -->
+    <div id="initial-screen" class="screen">
+        <div class="debug-title">
+            DEBUG
+        </div>
+        
+        <div class="question-text">
+            ¿QUIERES JUGAR A DEBUG?
+        </div>
+        
+        <pre style="text-align: center; margin: 20px 0;">
+<span class="provocation-text">MARCA TRUE SI QUIERES JUGAR</span>
+<span class="provocation-text">MARCA FALSE SI NO QUIERES SER UN BUEN INFORMÁTICO</span>
+        </pre>
+        
+        <div class="options">
+            <button class="option-btn" onclick="window.gameController.startGame(true)">TRUE</button>
+            <button class="option-btn" onclick="window.gameController.startGame(false)">FALSE</button>
+        </div>
+        
+        <div class="system-message">
+            > root@debug-system:~$ Esperando tu decisión...
+        </div>
+    </div>
+
+    <!-- ===== LOBBY ===== -->
+    <div id="lobby-screen" class="screen">
+        <div class="lobby-title">DEBUG ESCAPE ROOM</div>
+        
+        <div class="lobby-description">
+            <p>Estás atrapado en un bucle de depuración infinito.</p>
+            <p>Cada sala representa un entorno de código corrupto.</p>
+            <p>Resuelve las preguntas técnicas para escapar.</p>
+        </div>
+        
+        <div class="doors-container">
+            <div class="door" onclick="window.gameController.enterRoom(1)">
+                <span class="door-number">1</span>
+                <span class="door-name">EL BUCLE<br>INFINITO</span>
+            </div>
+            <div class="door" onclick="window.gameController.enterRoom(2)">
+                <span class="door-number">2</span>
+                <span class="door-name">CÓDIGO<br>MALDITO</span>
+            </div>
+            <div class="door" onclick="window.gameController.enterRoom(3)">
+                <span class="door-number">3</span>
+                <span class="door-name">FUNCIÓN<br>RECURSIVA</span>
+            </div>
+            <div class="door" onclick="window.gameController.enterRoom(4)">
+                <span class="door-number">4</span>
+                <span class="door-name">MEMORIA<br>CORRUPTA</span>
+            </div>
+            <div class="door" onclick="window.gameController.enterRoom(5)">
+                <span class="door-number">5</span>
+                <span class="door-name">KERNEL<br>FANTASMA</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Importar librerías JavaScript en orden correcto -->
+    <!-- 1. Room Manager (contiene todas las salas) -->
+    <script src="js/core/room-manager.js"></script>
+    
+    <!-- 2. Game Controller (controlador principal) -->
+    <script src="js/core/game-controller.js"></script>
+    
+    <!-- 3. UI Controller (interfaz de usuario) -->
+    <script src="js/core/ui-controller.js"></script>
+    
+    <!-- 4. Audio Manager (efectos de sonido) -->
+    <script src="js/utils/audio-manager.js"></script>
+    
+    <!-- 5. Storage Manager (persistencia de datos) -->
+    <script src="js/utils/storage-manager.js"></script>
+    
+    <!-- 6. Main.js (punto de entrada) -->
+    <script src="js/main.js"></script>
+</body>
+</html>
