@@ -2,7 +2,7 @@
  * Gestor de audio
  * Reproduce efectos de sonido
  */
-class AudioManager {
+class audioManager {
     constructor() {
         this.audioContext = null;
         this.sounds = {
