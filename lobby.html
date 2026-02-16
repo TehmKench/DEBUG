@@ -308,37 +308,8 @@
             color: #10b981;
             margin-left: 5px;
         }
-
-        /* Sistema de vidas */
-        .lives-container {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            z-index: 20;
-        }
-
-        .life {
-            font-size: 28px;
-            color: #ef4444;
-            transition: all 0.3s;
-        }
-
-        .life.lost {
-            color: #64748b;
-            text-decoration: line-through;
-            opacity: 0.5;
-        }
-
-        .life.warning {
-            animation: heartBlink 1s infinite;
-        }
-
-        @keyframes heartBlink {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(1.1); }
-        }
+        
+        /* REMOVIDO: Todos los estilos de .lives-container y .life */
     </style>
 </head>
 <body>
@@ -373,13 +344,9 @@
         </div>
     </div>
 
-    <!-- ===== LOBBY ===== -->
+    <!-- ===== LOBBY (SIN CORAZONES) ===== -->
     <div id="lobby-screen" class="screen">
-        <div class="lives-container" id="lives-display">
-            <span class="life">❤️</span>
-            <span class="life">❤️</span>
-            <span class="life">❤️</span>
-        </div>
+        <!-- REMOVIDO: <div class="lives-container" id="lives-display">...</div> -->
         
         <div class="lobby-title">DEBUG ESCAPE ROOM</div>
         
@@ -424,6 +391,11 @@
         // Generar código animado exterior
         function generateCodeRain() {
             const codeRain = document.getElementById('codeRain');
+            if (!codeRain) return;
+            
+            // Limpiar código anterior para evitar duplicados
+            codeRain.innerHTML = '';
+            
             const codeSnippets = [
                 'while(true){debug();}',
                 'if(error){fix();}',
@@ -475,19 +447,20 @@
         // Función al seleccionar una opción en la pantalla inicial
         function startGame(choice) {
             if (choice) {
-                // Elegir TRUE: mostrar lobby
+                // ✅ OCULTAR PANTALLA INICIAL
                 document.getElementById('initial-screen').style.display = 'none';
+                
+                // ✅ MOSTRAR LOBBY (SIN CORAZONES)
                 document.getElementById('lobby-screen').style.display = 'block';
                 gameState.currentScreen = 'lobby';
                 
-                // Simular carga breve
+                // Mensaje de bienvenida
                 setTimeout(() => {
                     alert('¡Bienvenido al sistema de depuración!\n\nElige una sala para comenzar tu escape.');
-                }, 500);
+                }, 300);
             } else {
-                // Elegir FALSE: mensaje de rechazo sin efecto "Cobarde"
-                const initialScreen = document.getElementById('initial-screen');
-                initialScreen.innerHTML = `
+                // Mensaje de acceso denegado
+                document.getElementById('initial-screen').innerHTML = `
 <div style="text-align: center; padding: 40px;">
     <div style="color: #ff4444; font-size: 36px; font-weight: bold; margin-bottom: 20px; text-shadow: 0 0 10px #ff0000;">
         ✗ ERROR 403: ACCESO DENEGADO
@@ -510,33 +483,13 @@
         // Función para entrar a una sala
         function enterRoom(roomNumber) {
             alert(`Entrando a la Sala ${roomNumber}...\n\nEsta funcionalidad se implementará próximamente.`);
-            // Aquí iría la lógica para cargar la sala correspondiente
-        }
-
-        // Función para actualizar el display de vidas
-        function updateLivesDisplay() {
-            const livesContainer = document.getElementById('lives-display');
-            livesContainer.innerHTML = '';
-            
-            for (let i = 0; i < 3; i++) {
-                const life = document.createElement('span');
-                life.className = 'life';
-                life.textContent = '❤️';
-                
-                if (i >= gameState.lives) {
-                    life.classList.add('lost');
-                } else if (gameState.lives === 1 && i === 0) {
-                    life.classList.add('warning');
-                }
-                
-                livesContainer.appendChild(life);
-            }
         }
 
         // Inicializar al cargar la página
-        window.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', () => {
             generateCodeRain();
-            updateLivesDisplay();
+            // ✅ REMOVIDO: Configuración de event listeners innecesarios
+            // Los botones y puertas usan onclick inline (funciona correctamente)
         });
     </script>
 </body>
