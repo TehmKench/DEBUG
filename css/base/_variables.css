@@ -1,0 +1,24 @@
+:root {
+    /* Colores principales */
+    --color-neon-green: #00ff00;
+    --color-neon-cyan: #00ffff;
+    --color-error-red: #ff4444;
+    --color-success-green: #10b981;
+    
+    /* Colores de salas */
+    --room-1-color: #1e3a8a;  /* Azul profundo */
+    --room-2-color: #4f46e5;  /* Índigo */
+    --room-3-color: #7c3aed;  /* Púrpura */
+    --room-4-color: #db2777;  /* Rosa/Rojo */
+    --room-5-color: #be123c;  /* Rojo sangre */
+    
+    /* Tipografía */
+    --font-terminal: 'Courier New', monospace, 'Lucida Console';
+    
+    /* Espaciado */
+    --spacing-xs: 5px;
+    --spacing-sm: 10px;
+    --spacing-md: 20px;
+    --spacing-lg: 40px;
+    --spacing-xl: 60px;
+}
