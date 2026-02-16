@@ -6,6 +6,7 @@ class AudioManager {
         this.audioContext = null;
         this.sounds = {
             'success': 'assets/audio/beep-success.mp3',
+        
             'error': 'assets/audio/beep-error.mp3',
             'typing': 'assets/audio/terminal-typing.mp3',
             'static': 'assets/audio/static-loop.mp3'

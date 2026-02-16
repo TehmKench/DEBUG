@@ -308,8 +308,39 @@
             color: #10b981;
             margin-left: 5px;
         }
-        
-        /* REMOVIDO: Todos los estilos de .lives-container y .life */
+        /* Estilos para puertas desbloqueadas/bloqueadas */
+        .door.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: scale(1);
+            box-shadow: none;
+            border-color: #4a5568;
+            background: linear-gradient(145deg, #2d3748 0%, #4a5568 100%);
+        }
+
+        .door.disabled:hover {
+            transform: scale(1);
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .door.disabled::before {
+            display: none;
+        }
+
+        /* Efecto para puertas desbloqueadas */
+        .door.unlocked {
+            opacity: 1;
+            cursor: pointer;
+            border-color: #00ff00;
+            background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+
+        .door.unlocked:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 255, 0, 0.5);
+            border-color: #00ffff;
+        }
     </style>
 </head>
 <body>
@@ -356,29 +387,37 @@
             <p>Resuelve las preguntas técnicas para escapar.</p>
         </div>
         
-        <div class="doors-container">
-            <div class="door" onclick="enterRoom(1)">
-                <span class="door-number">1</span>
-                <span class="door-name">EL BUCLE<br>INFINITO</span>
-            </div>
-            <div class="door" onclick="enterRoom(2)">
-                <span class="door-number">2</span>
-                <span class="door-name">CÓDIGO<br>MALDITO</span>
-            </div>
-            <div class="door" onclick="enterRoom(3)">
-                <span class="door-number">3</span>
-                <span class="door-name">FUNCIÓN<br>RECURSIVA</span>
-            </div>
-            <div class="door" onclick="enterRoom(4)">
-                <span class="door-number">4</span>
-                <span class="door-name">MEMORIA<br>CORRUPTA</span>
-            </div>
-            <div class="door" onclick="enterRoom(5)">
-                <span class="door-number">5</span>
-                <span class="door-name">KERNEL<br>FANTASMA</span>
-            </div>
-        </div>
+       <div class="doors-container">
+    <!-- Sala 1: ACTIVA (completada = false) -->
+    <div class="door" onclick="enterRoom(1)">
+        <span class="door-number">1</span>
+        <span class="door-name">EL BUCLE<br>INFINITO</span>
     </div>
+    
+    <!-- Sala 2: DESBLOQUEADA (completada = false) -->
+    <div class="door disabled" data-room="2" onclick="alert('Sala bloqueada. Completa la Sala 1 primero.')">
+        <span class="door-number">2</span>
+        <span class="door-name">CÓDIGO<br>MALDITO</span>
+    </div>
+    
+    <!-- Sala 3: BLOQUEADA (completada = false) -->
+    <div class="door disabled" data-room="3" onclick="alert('Sala bloqueada. Completa la Sala 1 primero.')">
+        <span class="door-number">3</span>
+        <span class="door-name">FUNCIÓN<br>RECURSIVA</span>
+    </div>
+    
+    <!-- Sala 4: BLOQUEADA (completada = false) -->
+    <div class="door disabled" data-room="4" onclick="alert('Sala bloqueada. Completa la Sala 1 primero.')">
+        <span class="door-number">4</span>
+        <span class="door-name">MEMORIA<br>CORRUPTA</span>
+    </div>
+    
+    <!-- Sala 5: BLOQUEADA (completada = false) -->
+    <div class="door disabled" data-room="5" onclick="alert('Sala bloqueada. Completa la Sala 1 primero.')">
+        <span class="door-number">5</span>
+        <span class="door-name">KERNEL<br>FANTASMA</span>
+    </div>
+</div>
 
     <script>
         // Estado del juego
@@ -480,16 +519,60 @@
             }
         }
 
-        // Función para entrar a una sala
-        function enterRoom(roomNumber) {
-            alert(`Entrando a la Sala ${roomNumber}...\n\nEsta funcionalidad se implementará próximamente.`);
+    // Función para entrar a una sala
+    function enterRoom(roomNumber) {
+    // Si la sala está bloqueada, mostrar alerta (solo para prueba)
+    const door = document.querySelector(`.door[data-room="${roomNumber}"]`);
+    if (door && door.classList.contains('disabled')) {
+        alert('Sala bloqueada. Completa la Sala 1 primero.');
+        return;
+    }
+    
+    // Simular acceso a la sala
+    alert(`Entrando a la Sala ${roomNumber}...\n\nEsta funcionalidad se implementará próximamente.`);
+    
+    // En tu implementación real, aquí se cargaría la sala
+    // ... 
+    
+    // Simular completar la sala (solo para prueba)
+    setTimeout(() => {
+        if (roomNumber === 1) {
+            completeRoom(1); // Desbloquea Sala 2
         }
+    }, 2000);
+}
 
-        // Inicializar al cargar la página
+// Inicializar al cargar la página
         document.addEventListener('DOMContentLoaded', () => {
             generateCodeRain();
-            // ✅ REMOVIDO: Configuración de event listeners innecesarios
-            // Los botones y puertas usan onclick inline (funciona correctamente)
+// Función para desbloquear la siguiente sala
+    function unlockNextRoom(completedRoomNumber) {
+    const nextRoomNumber = completedRoomNumber + 1;
+    
+    if (nextRoomNumber > 5) return;
+    
+    // Encontrar la siguiente puerta
+    const nextDoor = document.querySelector(`.door[data-room="${nextRoomNumber}"]`);
+    
+    if (nextDoor) {
+        // Desbloquear la puerta
+        nextDoor.classList.remove('disabled');
+        nextDoor.classList.add('unlocked');
+        
+        // Restaurar el evento onclick correcto
+        nextDoor.setAttribute('onclick', `enterRoom(${nextRoomNumber})`);
+        
+        // Mostrar mensaje de desbloqueo
+        alert(`¡Sala ${nextRoomNumber} desbloqueada!\n\nAhora puedes acceder a la Sala ${nextRoomNumber}.`);
+    }
+}
+
+// Simulación de completar una sala (para prueba)
+function completeRoom(roomNumber) {
+    // En tu implementación real, esto se llamará cuando se completen todas las preguntas
+    alert(`Sala ${roomNumber} completada exitosamente!`);
+    unlockNextRoom(roomNumber);
+}
         });
     </script>
 </body>
