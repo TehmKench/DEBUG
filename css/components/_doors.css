@@ -13,7 +13,7 @@
     z-index: 20;
 }
 
-/* Título del lobby */
+/* Título del lobby - SIN ANIMACIÓN */
 .lobby-title {
     font-size: 42px;
     font-weight: bold;
@@ -111,4 +111,39 @@
     content: ' ✓';
     color: var(--color-success-green);
     margin-left: 5px;
+}
+
+/* Puerta activa (solo la 1 al inicio) */
+.door.active {
+    opacity: 1;
+    cursor: pointer;
+    border-color: var(--color-neon-green);
+    background: linear-gradient(145deg, #1a1a1a 0%, #2d2d2d 100%);
+    transform: scale(1.05);
+    box-shadow: 0 0 25px rgba(0, 255, 0, 0.4);
+}
+
+.door.active:hover {
+    transform: translateY(-8px) scale(1.08);
+    box-shadow: 0 12px 35px rgba(0, 255, 0, 0.7);
+    border-color: var(--color-neon-cyan);
+}
+
+/* Puerta bloqueada */
+.door.locked {
+    opacity: 0.35;
+    cursor: not-allowed;
+    border-color: #4a5568;
+    background: linear-gradient(145deg, #2d3748 0%, #4a5568 100%);
+    transform: scale(0.92);
+}
+
+.door.locked:hover {
+    transform: scale(0.92);
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
+.door.locked::before {
+    display: none;
 }

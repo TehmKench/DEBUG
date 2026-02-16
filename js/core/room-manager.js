@@ -1,6 +1,6 @@
+// js/core/room-manager.js
 /**
  * Room Manager - Gestor de Salas de Depuración
- * Contiene todas las 5 salas del escape room
  */
 class RoomManager {
     constructor() {
@@ -11,32 +11,53 @@ class RoomManager {
             4: this.createRoom_MemoriaCorrupta(),
             5: this.createRoom_KernelFantasma()
         };
-        this.completedRooms = [];
     }
 
-    // ... (métodos createRoom_* con las preguntas de cada sala)
-    // ... (métodos getRoom, validateAnswer, etc.)
-
+    // Método 1: Define las funciones correctamente
     createRoom_BucleInfinito() {
         return {
             id: 1,
             name: "EL BUCLE INFINITO",
-            description: "Nivel 1: Fundamentos de programación",
-            themeColor: "#1e3a8a",
-            questions: [
-                {
-                    id: "q1_1",
-                    question: "¿Qué palabra se usa para repetir una acción varias veces?",
-                    options: [
-                        { id: "a", text: "loop / for", correct: true },
-                        { id: "b", text: "exit", correct: false }
-                    ]
-                },
-                // ... más preguntas de la sala 1
-            ]
+            questions: []
         };
     }
-    
-    // Implementar métodos similares para las otras 4 salas
-    // (El contenido completo ya lo tienes en versiones anteriores)
+
+    createRoom_CodigoMaldito() {
+        return {
+            id: 2,
+            name: "CÓDIGO MALDITO",
+            questions: []
+        };
+    }
+
+    createRoom_FuncionRecursiva() {
+        return {
+            id: 3,
+            name: "FUNCIÓN RECURSIVA",
+            questions: []
+        };
+    }
+
+    createRoom_MemoriaCorrupta() {
+        return {
+            id: 4,
+            name: "MEMORIA CORRUPTA",
+            questions: []
+        };
+    }
+
+    createRoom_KernelFantasma() {
+        return {
+            id: 5,
+            name: "KERNEL FANTASMA",
+            questions: []
+        };
+    }
+
+    getRoom(roomNumber) {
+        return this.rooms[roomNumber] || null;
+    }
 }
+
+// Exportar globalmente
+window.RoomManager = RoomManager;
