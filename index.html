@@ -4,953 +4,1025 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>DEBUG - Escape Room</title>
-
   <style>
-    /* ===== RESET Y BASE ===== */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    body {
-      font-family: 'Courier New', monospace;
-      background: #0a0a0f;
-      color: #00ff41;
-      min-height: 100vh;
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=VT323&display=swap');
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --g:    #00ff41;
+      --g2:   #00cc33;
+      --g3:   #008822;
+      --g4:   #003311;
+      --gdim: rgba(0,255,65,0.5);
+      --gbg:  rgba(0,255,65,0.07);
+      --red:  #ff3355;
+      --amb:  #ffaa00;
+      --bg:   #000;
+      --bg2:  #050a05;
+      --mono: 'Share Tech Mono', 'Courier New', monospace;
+      --disp: 'VT323', monospace;
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--bg);
+      color: var(--g);
+      font-family: var(--mono);
       overflow: hidden;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      user-select: none;
+      cursor: none;
     }
 
-    /* ===== FONDO OSCURO CON GRADIENTE SUTIL ===== */
-    .bg-dark {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: 
-        radial-gradient(ellipse at 50% 50%, rgba(0,255,65,0.03) 0%, transparent 70%),
-        linear-gradient(180deg, #0a0a0f 0%, #0d1117 100%);
+    /* ── CURSOR ── */
+    #cur {
+      position: fixed; z-index: 9999;
+      width: 14px; height: 14px;
+      border: 2px solid var(--g); border-radius: 50%;
       pointer-events: none;
-      z-index: 0;
+      transform: translate(-50%,-50%);
+      transition: width .15s, height .15s, border-color .2s;
+      box-shadow: 0 0 8px var(--gdim);
+      mix-blend-mode: screen;
     }
+    #cur.big { width: 26px; height: 26px; box-shadow: 0 0 16px var(--g); }
+    #cur.red { border-color: var(--red); box-shadow: 0 0 12px rgba(255,51,85,.6); }
 
-    /* ===== EFECTO ESTÁTICA DE FONDO ===== */
-    .static-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: 
-        repeating-radial-gradient(#0a0a0f 0, #0d1117 1px, transparent 2px, transparent 4px),
-        repeating-linear-gradient(45deg, rgba(0,255,65,0.02) 0, transparent 10px);
-      opacity: 0.08;
-      pointer-events: none;
-      z-index: 1;
-      animation: staticShift 0.15s infinite steps(2);
-    }
-    
-    @keyframes staticShift {
-      0% { background-position: 0 0, 0 0; }
-      100% { background-position: 5px 5px, 10px 10px; }
-    }
-
-    /* ===== LLUVIA DE CÓDIGO VERDE ===== */
-    .code-rain {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      z-index: 2;
-      overflow: hidden;
-    }
-
-    .code-stream {
-      position: absolute;
-      top: -150px;
-      font-family: 'Courier New', monospace;
-      font-size: 11px;
-      line-height: 1.4;
-      white-space: pre;
-      color: #00ff41;
-      text-shadow: 0 0 5px rgba(0,255,65,0.5);
-      animation-name: fall;
-      animation-timing-function: linear;
-      animation-iteration-count: infinite;
-      user-select: none;
-      pointer-events: none;
-    }
-
-    /* Variaciones de intensidad verde */
-    .code-stream.variant-bright { 
-      color: #00ff41; 
-      text-shadow: 0 0 8px #00ff41, 0 0 15px rgba(0,255,65,0.5);
-      opacity: 1;
-    }
-    .code-stream.variant-dim { 
-      color: #00aa22; 
-      text-shadow: 0 0 3px rgba(0,255,65,0.3);
-      opacity: 0.6;
-    }
-    .code-stream.variant-fade { 
-      color: #006611; 
-      opacity: 0.4;
-    }
-
-    @keyframes fall {
-      0% {
-        transform: translateY(-150px) translateX(0);
-        opacity: 0;
-      }
-      10% { opacity: 1; }
-      90% { opacity: 1; }
-      100% {
-        transform: translateY(110vh) translateX(var(--drift));
-        opacity: 0;
-      }
-    }
-
-    /* ===== PANTALLA INICIAL ===== */
-    .screen {
-      position: relative;
-      z-index: 10;
-      text-align: center;
-      padding: 40px 20px;
-      max-width: 800px;
-      width: 90%;
-    }
-
-    /* Título DEBUG con efecto glitch VERDE */
-    .debug-title {
-      font-size: clamp(3rem, 12vw, 6rem);
-      font-weight: 900;
-      letter-spacing: 0.3em;
-      margin-bottom: 30px;
-      color: #00ff41;
-      text-shadow: 
-        0 0 10px #00ff41,
-        0 0 20px #00ff41,
-        0 0 40px rgba(0,255,65,0.5);
-      animation: titleGlow 2s ease-in-out infinite alternate;
-      position: relative;
-    }
-
-    .debug-title::before,
-    .debug-title::after {
-      content: "DEBUG";
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%;
-      clip-path: inset(0 0 0 0);
-    }
-
-    .debug-title::before {
-      color: #00ff41;
-      animation: glitchTop 2s infinite linear alternate-reverse;
-      opacity: 0.7;
-      text-shadow: 0 0 10px #00ff41;
-    }
-
-    .debug-title::after {
-      color: #00cc33;
-      animation: glitchBottom 2.5s infinite linear alternate-reverse;
-      opacity: 0.7;
-      text-shadow: 0 0 10px #00cc33;
-    }
-
-    @keyframes titleGlow {
-      from { 
-        text-shadow: 
-          0 0 10px #00ff41,
-          0 0 20px #00ff41,
-          0 0 30px rgba(0,255,65,0.3);
-      }
-      to { 
-        text-shadow: 
-          0 0 20px #00ff41,
-          0 0 40px #00ff41,
-          0 0 60px rgba(0,255,65,0.6);
-      }
-    }
-
-    @keyframes glitchTop {
-      0% { transform: translate(0); }
-      20% { transform: translate(-2px, 2px); }
-      40% { transform: translate(-2px, -2px); }
-      60% { transform: translate(2px, 2px); }
-      80% { transform: translate(2px, -2px); }
-      100% { transform: translate(0); }
-    }
-
-    @keyframes glitchBottom {
-      0% { transform: translate(0); }
-      20% { transform: translate(2px, -2px); }
-      40% { transform: translate(-2px, 2px); }
-      60% { transform: translate(2px, 2px); }
-      80% { transform: translate(-2px, -2px); }
-      100% { transform: translate(0); }
-    }
-
-    /* Pregunta principal */
-    .question-text {
-      font-size: clamp(1.2rem, 4vw, 1.8rem);
-      margin: 20px 0 30px;
-      color: #00ff41;
-      text-shadow: 0 0 10px rgba(0,255,65,0.7);
-      animation: fadeIn 1s ease-out;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Texto provocativo */
-    .provocation-text {
-      display: block;
-      font-size: clamp(0.9rem, 3vw, 1.1rem);
-      margin: 8px 0;
-      padding: 5px 15px;
-      border: 1px solid rgba(0,255,65,0.3);
-      background: rgba(0,255,65,0.05);
-      transition: all 0.3s;
-    }
-
-    .provocation-text:hover {
-      border-color: #00ff41;
-      background: rgba(0,255,65,0.1);
-      text-shadow: 0 0 8px rgba(0,255,65,0.5);
-    }
-
-    /* Botones de opción */
-    .options {
-      display: flex;
-      gap: 20px;
-      justify-content: center;
-      margin: 40px 0;
-      flex-wrap: wrap;
-    }
-
-    .option-btn {
-      background: transparent;
-      border: 2px solid #00ff41;
-      color: #00ff41;
-      padding: 15px 50px;
-      font-size: clamp(1rem, 3vw, 1.3rem);
-      font-family: inherit;
-      font-weight: bold;
-      letter-spacing: 3px;
-      cursor: pointer;
-      position: relative;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      min-width: 150px;
-      box-shadow: 0 0 10px rgba(0,255,65,0.2);
-    }
-
-    .option-btn::before {
-      content: "";
-      position: absolute;
-      top: 0; left: -100%;
-      width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(0,255,65,0.2), transparent);
-      transition: left 0.5s;
-    }
-
-    .option-btn:hover::before {
-      left: 100%;
-    }
-
-    .option-btn:hover {
-      background: rgba(0,255,65,0.15);
-      box-shadow: 
-        0 0 15px rgba(0,255,65,0.5),
-        0 0 30px rgba(0,255,65,0.2),
-        inset 0 0 15px rgba(0,255,65,0.1);
-      transform: translateY(-2px);
-    }
-
-    .option-btn:active {
-      transform: translateY(1px);
-    }
-
-    /* Botón FALSE con estilo diferente (gris/rojo apagado) */
-    #false-btn {
-      border-color: #444;
-      color: #666;
-      box-shadow: 0 0 10px rgba(100,100,100,0.2);
-    }
-
-    #false-btn:hover {
-      border-color: #ff3355;
-      color: #ff3355;
-      background: rgba(255,51,85,0.1);
-      box-shadow: 
-        0 0 15px rgba(255,51,85,0.4),
-        inset 0 0 15px rgba(255,51,85,0.1);
-    }
-
-    /* Mensaje de sistema */
-    .system-message {
-      margin-top: 30px;
-      font-size: clamp(0.8rem, 2.5vw, 1rem);
-      color: #00ff41;
-      opacity: 0.7;
-      animation: blink 1.5s infinite;
-      text-shadow: 0 0 5px rgba(0,255,65,0.5);
-    }
-
-    @keyframes blink {
-      0%, 50% { opacity: 0.7; }
-      51%, 100% { opacity: 1; }
-    }
-
-    /* ===== TRAMPA: PANTALLA DE CAPTURA ===== */
-    #trap-screen {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(10,10,15,0.98);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 200;
-      flex-direction: column;
-      text-align: center;
-      padding: 20px;
-    }
-
-    #trap-screen.active { 
-      display: flex; 
-      animation: trapIn 0.5s ease-out;
-    }
-
-    @keyframes trapIn {
-      0% { 
-        opacity: 0;
-        transform: scale(0.9);
-      }
-      50% {
-        opacity: 1;
-        transform: scale(1.02);
-      }
-      100% { 
-        opacity: 1;
-        transform: scale(1);
-      }
-    }
-
-    #trap-screen h2 {
-      font-size: clamp(2rem, 8vw, 4rem);
-      color: #ff3355;
-      margin-bottom: 20px;
-      text-shadow: 0 0 20px rgba(255,51,85,0.7);
-      animation: trapPulse 1s ease-in-out infinite;
-    }
-
-    @keyframes trapPulse {
-      0%, 100% { 
-        text-shadow: 0 0 20px rgba(255,51,85,0.7);
-        transform: scale(1);
-      }
-      50% { 
-        text-shadow: 0 0 40px rgba(255,51,85,1), 0 0 60px rgba(255,51,85,0.5);
-        transform: scale(1.05);
-      }
-    }
-
-    #trap-screen .trap-message {
-      font-size: clamp(1rem, 3vw, 1.4rem);
-      max-width: 700px;
-      margin-bottom: 30px;
-      line-height: 1.8;
-      color: #00ff41;
-      text-shadow: 0 0 10px rgba(0,255,65,0.5);
-    }
-
-    #trap-screen .trap-message strong {
-      color: #ff3355;
-      text-shadow: 0 0 10px rgba(255,51,85,0.7);
-    }
-
-    /* Cuenta regresiva */
-    .countdown-container {
-      margin: 30px 0;
-      padding: 20px 40px;
-      border: 2px solid #ff3355;
-      background: rgba(255,51,85,0.1);
-      border-radius: 5px;
-      box-shadow: 0 0 30px rgba(255,51,85,0.3);
-    }
-
-    .countdown-label {
-      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-      color: #ff6677;
-      margin-bottom: 10px;
-      text-transform: uppercase;
-      letter-spacing: 2px;
-    }
-
-    .countdown-timer {
-      font-size: clamp(3rem, 10vw, 6rem);
-      font-weight: 900;
-      color: #ff3355;
-      text-shadow: 
-        0 0 20px rgba(255,51,85,0.8),
-        0 0 40px rgba(255,51,85,0.5),
-        0 0 60px rgba(255,51,85,0.3);
-      animation: countdownPulse 1s ease-in-out infinite;
-      font-family: 'Courier New', monospace;
-    }
-
-    @keyframes countdownPulse {
-      0%, 100% { 
-        opacity: 1;
-        transform: scale(1);
-      }
-      50% { 
-        opacity: 0.8;
-        transform: scale(0.98);
-      }
-    }
-
-    .countdown-timer.warning {
-      color: #ff0000;
-      animation: countdownWarning 0.3s ease-in-out infinite;
-    }
-
-    @keyframes countdownWarning {
-      0%, 100% { 
-        opacity: 1;
-        transform: scale(1);
-        text-shadow: 0 0 30px rgba(255,0,0,1);
-      }
-      50% { 
-        opacity: 0.5;
-        transform: scale(1.05);
-        text-shadow: 0 0 50px rgba(255,0,0,1), 0 0 80px rgba(255,0,0,0.5);
-      }
-    }
-
-    .trap-footer {
-      font-size: clamp(0.8rem, 2vw, 1rem);
-      color: #666;
-      margin-top: 20px;
-      font-style: italic;
-    }
-
-    /* Efecto de glitch en pantalla de trampa */
-    .trap-glitch {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      pointer-events: none;
-      z-index: 201;
-      background: 
-        linear-gradient(90deg, transparent 50%, rgba(255,51,85,0.1) 50%),
-        linear-gradient(0deg, transparent 50%, rgba(255,51,85,0.1) 50%);
-      background-size: 4px 4px;
-      opacity: 0;
-      animation: glitchOverlay 0.2s infinite;
-    }
-
-    @keyframes glitchOverlay {
-      0% { opacity: 0; transform: translate(0, 0); }
-      10% { opacity: 0.3; transform: translate(-2px, 2px); }
-      20% { opacity: 0; transform: translate(2px, -2px); }
-      30% { opacity: 0.3; transform: translate(-2px, -2px); }
-      40% { opacity: 0; transform: translate(2px, 2px); }
-      100% { opacity: 0; transform: translate(0, 0); }
-    }
-
-    /* ===== SCANLINE EFFECT ===== */
+    /* ── CAPAS AMBIENTE ── */
     .scanlines {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: repeating-linear-gradient(
-        0deg,
-        rgba(0, 0, 0, 0.15) 0px,
-        rgba(0, 0, 0, 0.15) 1px,
-        transparent 1px,
-        transparent 2px
-      );
-      pointer-events: none;
-      z-index: 50;
-      opacity: 0.2;
+      position: fixed; inset: 0; z-index: 60; pointer-events: none;
+      background: repeating-linear-gradient(0deg,
+        rgba(0,0,0,.13) 0px, rgba(0,0,0,.13) 1px,
+        transparent 1px, transparent 2px);
     }
-
-    /* ===== VIGNETTE EFFECT ===== */
     .vignette {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.6) 100%);
-      pointer-events: none;
-      z-index: 4;
+      position: fixed; inset: 0; z-index: 59; pointer-events: none;
+      background: radial-gradient(ellipse at center, transparent 30%, rgba(0,0,0,.85) 100%);
+    }
+    .noise {
+      position: fixed; inset: 0; z-index: 58; pointer-events: none; opacity: .04;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      animation: noiseShift .1s infinite steps(4);
+    }
+    @keyframes noiseShift {
+      0%  { transform: translate(0,0); }
+      25% { transform: translate(-2px,1px); }
+      50% { transform: translate(1px,-2px); }
+      75% { transform: translate(2px,1px); }
     }
 
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 480px) {
-      .options { flex-direction: column; align-items: center; }
-      .option-btn { width: 100%; max-width: 300px; }
+    /* ── FLASH ── */
+    #flash {
+      position: fixed; inset: 0; z-index: 55;
+      pointer-events: none; opacity: 0;
+    }
+
+    /* ════════════════════════════════
+       PANTALLA 0: CMD HACK
+    ════════════════════════════════ */
+    #screen-cmd {
+      position: fixed; inset: 0; z-index: 45;
+      background: #0c0c0c;
+      display: flex; flex-direction: column;
+    }
+
+    #cmd-titlebar {
+      background: #000080; color: #fff;
+      font-family: var(--mono);
+      font-size: clamp(11px,1.3vw,13px);
+      padding: 3px 8px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0; user-select: none;
+    }
+    #cmd-titlebar .ct { display: flex; align-items: center; gap: 8px; }
+    #cmd-titlebar .cb {
+      background: #c0c0c0; color: #000;
+      width: 16px; height: 14px; font-size: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: bold; border: 1px solid;
+      border-color: #fff #808080 #808080 #fff;
+      cursor: default;
+    }
+    #cmd-titlebar .cbs { display: flex; gap: 2px; }
+
+    #cmd-body {
+      flex: 1; overflow: hidden;
+      padding: 4px 8px;
+      font-family: var(--mono);
+      font-size: clamp(11px,1.35vw,14px);
+      line-height: 1.45; color: #c0c0c0;
+      background: #0c0c0c;
+    }
+
+    .cl      { display: block; white-space: pre-wrap; word-break: break-all; }
+    .cl-p    { color: #c0c0c0; }   /* prompt */
+    .cl-cmd  { color: #fff; }      /* comando */
+    .cl-ok   { color: #00ff41; }   /* éxito */
+    .cl-dim  { color: #555; }      /* dim */
+    .cl-warn { color: #ffaa00; }   /* warning */
+    .cl-err  { color: #ff3333; }   /* error */
+    .cl-data { color: #00aaff; }   /* datos */
+    .cl-hi   { color: #ff55ff; }   /* highlight */
+
+    #cmd-cur {
+      display: inline-block; width: 8px; height: 1.1em;
+      background: #c0c0c0; vertical-align: text-bottom;
+      animation: cmdBlink .6s step-end infinite;
+    }
+    @keyframes cmdBlink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ════════════════════════════════
+       PANTALLA 1: TYPING INTRO
+    ════════════════════════════════ */
+    #screen-grub {
+      position: fixed; inset: 0; z-index: 40;
+      background: var(--bg);
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+    }
+
+    #typing-word {
+      font-family: var(--disp);
+      font-size: clamp(5rem, 22vw, 14rem);
+      letter-spacing: .2em;
+      color: var(--g);
+      text-shadow: 0 0 15px var(--g), 0 0 40px var(--gdim);
+      line-height: 1;
+      min-width: 2ch; /* evita saltos de layout */
+    }
+
+    #typing-cursor {
+      display: inline-block;
+      width: clamp(4px, 1vw, 8px);
+      height: clamp(3rem, 14vw, 9rem);
+      background: var(--g);
+      vertical-align: middle;
+      margin-left: 6px;
+      box-shadow: 0 0 12px var(--g);
+      animation: tcblink .55s step-end infinite;
+    }
+    @keyframes tcblink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* brillo que crece al completar la palabra */
+    #typing-word.done {
+      animation: wordDone .6s ease-out forwards;
+    }
+    @keyframes wordDone {
+      0%   { text-shadow: 0 0 15px var(--g), 0 0 40px var(--gdim); }
+      50%  { text-shadow: 0 0 30px var(--g), 0 0 80px var(--g), 0 0 120px var(--gdim); letter-spacing: .3em; }
+      100% { text-shadow: 0 0 20px var(--g), 0 0 60px var(--g), 0 0 100px var(--gdim); letter-spacing: .2em; }
+    }
+
+    /* ════════════════════════════════
+       PANTALLA 2: CODE DUMP
+    ════════════════════════════════ */
+    #screen-dump {
+      position: fixed; inset: 0; z-index: 41;
+      background: #000; display: none;
+      font-size: clamp(9px,1.15vw,12px);
+      line-height: 1.38; color: var(--g);
+      overflow: hidden; padding: 8px 16px;
+      font-family: var(--mono);
+    }
+    #screen-dump.show { display: block; }
+
+    .dl { display: block; white-space: pre; }
+    .dl-ok   { color: var(--g); }
+    .dl-dim  { color: var(--g4); }
+    .dl-addr { color: var(--g3); }
+    .dl-warn { color: var(--amb); }
+    .dl-err  { color: var(--red); }
+
+    /* ════════════════════════════════
+       PANTALLA 3: DEBUG MAIN
+    ════════════════════════════════ */
+    #screen-main {
+      position: fixed; inset: 0; z-index: 42;
+      background: var(--bg2);
+      display: none; flex-direction: column;
+      justify-content: center; align-items: center;
+    }
+    #screen-main.show { display: flex; }
+
+    /* lluvia */
+    #rain {
+      position: absolute; inset: 0;
+      pointer-events: none; overflow: hidden; z-index: 0;
+    }
+    .rcol {
+      position: absolute; top: -300px;
+      font-family: var(--mono); font-size: 11px;
+      white-space: pre; line-height: 1.4;
+      animation: rainFall linear infinite;
+      pointer-events: none;
+    }
+    .rb { color: var(--g);  text-shadow: 0 0 6px var(--g); opacity: .8; }
+    .rm { color: var(--g3); opacity: .5; }
+    .rd { color: var(--g4); opacity: .3; }
+    @keyframes rainFall {
+      0%   { transform: translateY(-300px); opacity: 0; }
+      5%   { opacity: 1; }
+      95%  { opacity: 1; }
+      100% { transform: translateY(115vh);  opacity: 0; }
+    }
+
+    /* contenido */
+    #mc {
+      position: relative; z-index: 10;
+      max-width: 800px; width: 93%;
+      text-align: left;
+    }
+
+    /* título */
+    .mtitle {
+      font-family: var(--disp);
+      font-size: clamp(4.5rem,17vw,10rem);
+      letter-spacing: .25em; line-height: 1;
+      color: var(--g);
+      text-shadow: 0 0 12px var(--g), 0 0 30px var(--gdim), 0 0 60px rgba(0,255,65,.18);
+      display: block; margin-bottom: 0;
+      opacity: 0;
+    }
+    .mtitle.on {
+      animation: revTitle .6s ease-out forwards, titleGlow 3s .6s ease-in-out infinite alternate;
+    }
+    @keyframes revTitle {
+      from { opacity:0; transform:translateY(-18px); letter-spacing:.6em; }
+      to   { opacity:1; transform:translateY(0);     letter-spacing:.25em; }
+    }
+    @keyframes titleGlow {
+      from { text-shadow: 0 0 12px var(--g), 0 0 25px var(--gdim); }
+      to   { text-shadow: 0 0 22px var(--g), 0 0 55px var(--g), 0 0 85px var(--gdim); }
+    }
+
+    .msub {
+      font-size: clamp(.65rem,1.8vw,.85rem);
+      letter-spacing: .55em; color: var(--g3);
+      display: block; margin-bottom: 28px;
+      opacity: 0;
+    }
+    .msub.on { animation: fu .5s ease-out .2s forwards; }
+
+    /* separador */
+    .mdiv {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--g3), transparent);
+      margin: 16px 0; opacity: 0;
+    }
+    .mdiv.on { animation: fu .4s ease-out forwards; }
+
+    /* intro */
+    .mblock { opacity: 0; }
+    .mblock.on { animation: fu .6s ease-out forwards; }
+
+    .mlabel {
+      font-size: .72rem; letter-spacing: .25em;
+      color: var(--g3); margin-bottom: 10px; display: block;
+    }
+
+    .mtext {
+      font-size: clamp(.87rem,2.2vw,1.04rem);
+      line-height: 1.9; color: #b0ffb8;
+      text-shadow: 0 0 4px rgba(0,255,65,.15);
+      margin-bottom: 13px;
+    }
+    .mtext em   { color: var(--g); font-style: normal; text-shadow: 0 0 8px var(--gdim); }
+    .mtext .w   { color: var(--amb); text-shadow: 0 0 6px rgba(255,170,0,.35); }
+
+    /* terminal inline */
+    .iterm {
+      background: rgba(0,0,0,.6);
+      border-left: 2px solid var(--g3);
+      padding: 10px 14px; margin: 14px 0;
+      font-size: .8rem; line-height: 1.65;
+    }
+    .iterm .p  { color: var(--g); }
+    .iterm .c  { color: #b0ffb8; }
+    .iterm .o  { color: var(--g3); }
+    .iterm .er { color: var(--red); }
+
+    /* botones */
+    .mbtn-row {
+      display: flex; gap: 16px; margin-top: 26px; flex-wrap: wrap;
+      opacity: 0;
+    }
+    .mbtn-row.on { animation: fu .5s ease-out forwards; }
+
+    .mbtn {
+      background: transparent;
+      border: 1px solid var(--g3); color: var(--g);
+      padding: 11px 38px;
+      font-family: var(--mono);
+      font-size: clamp(.88rem,2.4vw,1.03rem);
+      letter-spacing: .18em; cursor: none;
+      position: relative; overflow: hidden;
+      transition: all .25s ease;
+      box-shadow: 0 0 8px rgba(0,255,65,.1);
+    }
+    .mbtn::before {
+      content: ''; position: absolute;
+      top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0,255,65,.15), transparent);
+      transition: left .4s;
+    }
+    .mbtn:hover::before { left: 100%; }
+    .mbtn:hover {
+      border-color: var(--g); background: var(--gbg);
+      box-shadow: 0 0 22px var(--gdim), inset 0 0 14px rgba(0,255,65,.05);
+      transform: translateY(-2px); text-shadow: 0 0 8px var(--g);
+    }
+    .mbtn:active { transform: translateY(1px); }
+
+    .mbtn-f { border-color: #2a2a2a; color: #444; box-shadow: none; }
+    .mbtn-f:hover {
+      border-color: var(--red); color: var(--red);
+      background: rgba(255,51,85,.07);
+      box-shadow: 0 0 18px rgba(255,51,85,.35);
+      text-shadow: 0 0 8px var(--red);
+    }
+
+    /* status */
+    .mstatus {
+      font-size: .72rem; color: var(--g3); margin-top: 20px; opacity: 0;
+    }
+    .mstatus.on { animation: fu .4s ease-out forwards; }
+    .bl { animation: blink 1.2s step-end infinite; }
+    @keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
+
+    @keyframes fu {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    /* ════════════════════════════════
+       TRAMPA
+    ════════════════════════════════ */
+    #screen-trap {
+      position: fixed; inset: 0; z-index: 50;
+      background: rgba(5,0,0,.97);
+      display: none; flex-direction: column;
+      justify-content: center; align-items: center;
+      text-align: center; padding: 30px 20px;
+    }
+    #screen-trap.show {
+      display: flex;
+      animation: trapIn .4s ease-out;
+    }
+    @keyframes trapIn {
+      from { opacity:0; transform:scale(.92); }
+      to   { opacity:1; transform:scale(1); }
+    }
+
+    .trap-h {
+      font-family: var(--disp);
+      font-size: clamp(2.5rem,9vw,5.5rem);
+      color: var(--red); letter-spacing: .12em;
+      text-shadow: 0 0 25px rgba(255,51,85,.8);
+      animation: trapPulse .9s ease-in-out infinite;
+      margin-bottom: 16px;
+    }
+    @keyframes trapPulse {
+      0%,100%{ text-shadow: 0 0 20px rgba(255,51,85,.7); }
+      50%    { text-shadow: 0 0 50px var(--red), 0 0 80px rgba(255,51,85,.4); }
+    }
+
+    .trap-msg {
+      font-size: clamp(.87rem,2.3vw,1.13rem);
+      max-width: 640px; line-height: 1.9;
+      color: #b0ffb8; margin-bottom: 18px;
+    }
+    .trap-msg strong { color: var(--red); text-shadow: 0 0 8px rgba(255,51,85,.6); }
+
+    .trap-term {
+      background: rgba(0,0,0,.7);
+      border: 1px solid rgba(255,51,85,.3);
+      padding: 12px 18px; max-width: 560px; width: 100%;
+      text-align: left; font-size: .78rem; line-height: 1.72; margin-bottom: 18px;
+    }
+    .tl { display: block; }
+    .tl-r { color: var(--red); }
+    .tl-g { color: var(--g); }
+    .tl-d { color: #444; }
+
+    .trap-cw {
+      border: 1px solid var(--red);
+      background: rgba(255,51,85,.07);
+      padding: 16px 45px; margin-bottom: 14px;
+      box-shadow: 0 0 30px rgba(255,51,85,.2);
+    }
+    .trap-cl { font-size: .75rem; letter-spacing: .2em; color: #ff6677; text-transform: uppercase; margin-bottom: 4px; }
+    #trap-n {
+      font-family: var(--disp);
+      font-size: clamp(4rem,13vw,7.5rem);
+      color: var(--red); line-height: 1;
+      text-shadow: 0 0 20px rgba(255,51,85,.8);
+      animation: cp 1s ease-in-out infinite;
+    }
+    @keyframes cp { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.8;transform:scale(.97)} }
+    #trap-n.w { color:#f00; animation: cw .28s ease-in-out infinite; }
+    @keyframes cw {
+      0%,100%{opacity:1;text-shadow:0 0 40px #f00}
+      50%    {opacity:.4;text-shadow:0 0 80px #f00}
+    }
+
+    .trap-ft { font-size:.75rem; color:#333; font-style:italic; }
+
+    .trap-glitch {
+      position: fixed; inset: 0; pointer-events: none; z-index: 51;
+      background: linear-gradient(90deg,transparent 50%,rgba(255,51,85,.06) 50%),
+                  linear-gradient(0deg,  transparent 50%,rgba(255,51,85,.06) 50%);
+      background-size: 4px 4px; opacity: 0;
+      animation: tgo .17s infinite;
+    }
+    @keyframes tgo {
+      0%  {opacity:0}
+      12% {opacity:.3;transform:translate(-2px,2px)}
+      25% {opacity:0}
+      37% {opacity:.2;transform:translate(2px,-1px)}
+      50% {opacity:0}
+    }
+
+    @keyframes shake {
+      0%,100%{transform:translateX(0)}
+      20%{transform:translateX(-5px) rotate(-.3deg)}
+      40%{transform:translateX(5px)  rotate(.3deg)}
+      60%{transform:translateX(-4px)}
+      80%{transform:translateX(4px)}
+    }
+
+    @media(max-width:500px){
+      .mbtn-row{flex-direction:column}
+      .mbtn{width:100%;text-align:center}
     }
   </style>
 </head>
 <body>
 
-  <!-- Fondo oscuro -->
-  <div class="bg-dark"></div>
-  
-  <!-- Efecto de estática -->
-  <div class="static-overlay"></div>
-  
-  <!-- Scanlines estilo monitor CRT -->
-  <div class="scanlines"></div>
-  
-  <!-- Viñeta para profundidad -->
-  <div class="vignette"></div>
-  
-  <!-- Lluvia de código VERDE -->
-  <div class="code-rain" id="codeRain"></div>
-  
-  <!-- Partículas flotantes -->
-  <div id="particles-container"></div>
+<div id="cur"></div>
+<div class="scanlines"></div>
+<div class="vignette"></div>
+<div class="noise"></div>
+<div id="flash"></div>
 
-  <!-- ===== PANTALLA INICIAL ===== -->
-  <div id="initial-screen" class="screen">
-    <div class="debug-title">DEBUG</div>
-    
-    <div class="question-text">
-      ¿QUIERES JUGAR A DEBUG?
+<!-- ════ CMD HACK ════ -->
+<div id="screen-cmd">
+  <div id="cmd-titlebar">
+    <div class="ct">
+      <span>&#x1F4BB;</span>
+      <span>C:\Windows\System32\cmd.exe</span>
     </div>
-    
-    <pre style="text-align: center; margin: 20px 0; font-family: inherit; font-size: inherit; color: inherit; background: transparent; border: none;">
-<span class="provocation-text">MARCA TRUE SI QUIERES JUGAR</span>
-<span class="provocation-text">MARCA FALSE SI TE CONSIDERAS UN MAL INFORMÁTICO</span>
-    </pre>
-    
-    <div class="options">
-      <!-- ✅ TRUE: Redirige al HTML que tú especifiques -->
-      <button class="option-btn" id="true-btn">TRUE</button>
-      
-      <!-- ❌ FALSE: TRAMPA - No hay salida -->
-      <button class="option-btn" id="false-btn">FALSE</button>
-    </div>
-    
-    <div class="system-message">
-      > root@debug-system:~$ Esperando tu decisión...
+    <div class="cbs">
+      <div class="cb">_</div>
+      <div class="cb">&#9633;</div>
+      <div class="cb">&#x2715;</div>
     </div>
   </div>
+  <div id="cmd-body">
+    <span class="cl cl-dim">Microsoft Windows [Version 10.0.19045.4529]</span>
+    <span class="cl cl-dim">(c) Microsoft Corporation. All rights reserved.</span>
+    <span class="cl">&nbsp;</span>
+    <span id="cmd-out"></span>
+    <span id="cmd-cur"></span>
+  </div>
+</div>
 
-  <!-- ===== TRAMPA: PANTALLA DE CAPTURA ===== -->
-  <div id="trap-screen">
-    <div class="trap-glitch"></div>
-    
-    <h2>DEMASIADO TARDE</h2>
-    
-    <div class="trap-message">
-      <p>Ya estás dentro del sistema <strong>DEBUG</strong>.</p>
-      <p>No hay forma de salir.</p>
-      <p>Para escapar, necesitas completar todos los niveles.</p>
-      <br>
-      <p style="color: #ff6677;">Iniciando protocolo de transferencia forzada...</p>
+<!-- ════ TYPING INTRO ════ -->
+<div id="screen-grub">
+  <span id="typing-word"></span><span id="typing-cursor"></span>
+</div>
+
+<!-- ════ CODE DUMP ════ -->
+<div id="screen-dump">
+  <div id="dump-out"></div>
+</div>
+
+<!-- ════ DEBUG MAIN ════ -->
+<div id="screen-main">
+  <div id="rain"></div>
+
+  <div id="mc">
+    <span class="mtitle" id="mtitle">DEBUG</span>
+    <span class="msub"   id="msub">[ ESCAPE ROOM &nbsp;·&nbsp; v2.7.4 ]</span>
+
+    <div class="mdiv" id="div1"></div>
+
+    <div class="mblock" id="intro">
+      <span class="mlabel">// BRIEFING INICIAL —</span>
+
+      <p class="mtext">
+        Bienvenido, <em>operative</em>. El sistema <em>DEBUG</em> ha detectado una
+        anomalía crítica en el núcleo del servidor central.
+        Código malicioso ha sido inyectado en cada nodo de la red, corrompiendo
+        cuatro salas que antes eran seguras.
+      </p>
+
+      <p class="mtext">
+        Tu misión: <em>navegar sala por sala</em>, identificar los errores, depurar
+        el código y restablecer el sistema antes de que
+        <span class="w">el protocolo de purga elimine todos los datos</span>.
+        Cada sala tiene su propio tipo de corrupción. Ninguna será igual.
+      </p>
+
+      <div class="iterm">
+        <span><span class="p">root@debug-system:~$ </span><span class="c">./status --verbose</span></span><br>
+        <span class="o">  ┌──────────────────────────────────────────────────────┐</span><br>
+        <span class="o">  │ sala_1 │ <span style="color:var(--amb)">CORRUPTED</span>  │ dificultad: INIT     │ lógica     │</span><br>
+        <span class="o">  │ sala_2 │ <span style="color:#555">LOCKED   </span>  │ dificultad: MEDIUM   │ algoritmos │</span><br>
+        <span class="o">  │ sala_3 │ <span style="color:#555">LOCKED   </span>  │ dificultad: HARD     │ seguridad  │</span><br>
+        <span class="o">  │ sala_4 │ <span style="color:#555">LOCKED   </span>  │ dificultad: CRITICAL │ ???        │</span><br>
+        <span class="o">  └──────────────────────────────────────────────────────┘</span><br>
+        <span class="er">  [CORE]  INFECTED &nbsp;· tiempo restante: --:--:-- &nbsp;· PURGE ARMED</span>
+      </div>
+
+      <p class="mtext">
+        <span class="w">Advertencia:</span> una vez que inicies sesión,
+        <em>el protocolo bloqueará tu salida</em> hasta que completes los cuatro módulos.
+        No hay ctrl+C. No hay atajos. Solo hay un camino: <em>hacia adelante</em>.
+      </p>
     </div>
-    
-    <div class="countdown-container">
-      <div class="countdown-label">Transferencia en:</div>
-      <div class="countdown-timer" id="countdown-timer">10</div>
+
+    <div class="mdiv" id="div2"></div>
+
+    <div class="mbtn-row" id="brow">
+      <button class="mbtn"        id="true-btn">[ INICIAR_SESIÓN ]</button>
+      <button class="mbtn mbtn-f" id="false-btn">[ SALIR ]</button>
     </div>
-    
-    <div class="trap-footer">
-      > No puedes escapar. No hay salida. Solo adelante.
+
+    <div class="mstatus" id="mstatus">
+      <span class="bl">&gt;</span>
+      root@debug-system:~$ &nbsp;|&nbsp;
+      SESIÓN: <em style="color:var(--g)">ACTIVA</em> &nbsp;|&nbsp;
+      THREAT: <span style="color:var(--red)">■■■■</span><span style="color:#222">■■</span> ALTO &nbsp;|&nbsp;
+      NODOS INFECTADOS: <span style="color:var(--red)">4/4</span>
     </div>
   </div>
+</div>
 
-  <!-- Mensaje para FALSE (ya no se usa, pero lo dejo por si acaso) -->
-  <div id="false-message" style="display: none;"></div>
+<!-- ════ TRAMPA ════ -->
+<div id="screen-trap">
+  <div class="trap-glitch"></div>
 
-  <script>
-    // ===== CONFIGURACIÓN: REDIRECCIÓN =====
-    // 🎯 CAMBIA ESTA VARIABLE por la ruta de tu HTML destino
-    const NEXT_PAGE_URL = "room1.html"; // ← EDITA ESTO
-    
-    // ===== CONFIGURACIÓN: TIEMPO DE LA TRAMPA =====
-    const TRAP_COUNTDOWN_SECONDS = 10; // Segundos de cuenta regresiva
-    
-    // ===== ELEMENTOS DEL DOM =====
-    const trueBtn = document.getElementById('true-btn');
-    const falseBtn = document.getElementById('false-btn');
-    const trapScreen = document.getElementById('trap-screen');
-    const countdownTimer = document.getElementById('countdown-timer');
-    const particlesContainer = document.getElementById('particles-container');
+  <div class="trap-h">ACCESO DENEGADO</div>
 
-    // ===== ESTADO DEL JUEGO =====
-    let isTrapped = false;
-    let countdownInterval = null;
+  <div class="trap-msg" id="trap-msg">
+    <p>Intentaste <strong>salir del sistema</strong>. Eso no estaba permitido.</p>
+    <p>El protocolo de seguridad de <strong>DEBUG</strong> ha bloqueado tu sesión.</p>
+    <p>No existe ninguna salida que no pase por los cuatro niveles.</p>
+  </div>
 
-    // ===== EVENTO: CLICK EN TRUE =====
-    trueBtn.addEventListener('click', () => {
-      if (isTrapped) return; // Si ya está atrapado, ignorar
-      
-      // Efecto visual antes de redirigir
-      trueBtn.style.transform = 'scale(0.95)';
-      trueBtn.style.background = 'rgba(0,255,65,0.3)';
-      
-      // Efecto de partículas verdes
-      createExplosion(trueBtn.getBoundingClientRect(), ['#00ff41', '#00cc33', '#00aa22']);
-      
-      console.log('Usuario aceptó jugar. Redirigiendo a:', NEXT_PAGE_URL);
-      
-      // Redirección después de pequeño delay para efecto
+  <div class="trap-term">
+    <span class="tl tl-r">[ERR] &nbsp;exit() &nbsp;&nbsp;&nbsp;→ Operation not permitted &nbsp;(EACCES)</span>
+    <span class="tl tl-r">[ERR] &nbsp;logout() &nbsp;→ Session locked by system policy</span>
+    <span class="tl tl-r">[ERR] &nbsp;reboot() &nbsp;→ Insufficient privileges</span>
+    <span class="tl tl-d">[SYS] &nbsp;Scanning for alternative routes... &nbsp;none found.</span>
+    <span class="tl tl-g">[SYS] &nbsp;Initiating forced transfer → /sala_1</span>
+  </div>
+
+  <div class="trap-cw">
+    <div class="trap-cl">Transferencia forzada en:</div>
+    <div id="trap-n">10</div>
+  </div>
+
+  <div class="trap-ft">&gt; No hay ctrl+C. No hay ctrl+Z. Solo hay un camino: adelante.</div>
+</div>
+
+
+<script>
+/* ── CONFIG ── */
+const NEXT = 'room1.html';
+
+/* ── CURSOR ── */
+const cur = document.getElementById('cur');
+document.addEventListener('mousemove', e => {
+  cur.style.left = e.clientX + 'px';
+  cur.style.top  = e.clientY + 'px';
+});
+document.querySelectorAll('button').forEach(b => {
+  b.addEventListener('mouseenter', () => cur.classList.add('big'));
+  b.addEventListener('mouseleave', () => cur.classList.remove('big'));
+});
+
+/* ── AUDIO ── */
+let actx;
+function ctx() {
+  if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+  return actx;
+}
+function beep(f, type='square', dur=.08, vol=.05) {
+  try {
+    const c=ctx(), o=c.createOscillator(), g=c.createGain();
+    o.connect(g); g.connect(c.destination);
+    o.type=type; o.frequency.value=f; g.gain.value=vol;
+    g.gain.exponentialRampToValueAtTime(.001, c.currentTime+dur);
+    o.start(); o.stop(c.currentTime+dur);
+  } catch(e){}
+}
+const tbp = () => beep(500+Math.random()*300,'square',.025,.012);
+const cbp = () => beep(660,'sine',.1,.06);
+const ebp = () => { beep(180,'sawtooth',.3,.08); setTimeout(()=>beep(100,'sawtooth',.4,.06),160); };
+const kbp = n   => beep(300-n*12,'square',.06,.05);
+
+/* ════════════════════════════
+   CMD HACK — animación de "hackeo"
+════════════════════════════ */
+
+// Ocultar pantalla de typing hasta que CMD termine
+document.getElementById('screen-grub').style.display = 'none';
+
+// Secuencia de comandos y output del CMD
+// Formato: { type, text, cls, delay }
+//   type 'prompt' → escribe prompt + cmd letra a letra
+//   type 'out'    → aparece la línea entera de golpe
+//   type 'pause'  → espera sin escribir nada
+const cmdScript = [
+  { type:'prompt', cmd:'C:\\Users\\Usuario> ', text:'nmap -sS 192.168.1.0/24 --open', delay:40 },
+  { type:'out', cls:'cl-dim',  text:'Starting Nmap 7.94 ( https://nmap.org )' },
+  { type:'out', cls:'cl-data', text:'22/tcp   open  ssh' },
+  { type:'out', cls:'cl-data', text:'3306/tcp open  mysql' },
+  { type:'out', cls:'cl-warn', text:'OS: Linux 5.4 (95%) — target: 192.168.1.105' },
+  { type:'pause', ms:120 },
+  { type:'prompt', cmd:'C:\\Users\\Usuario> ', text:'python exploit.py --target 192.168.1.105', delay:38 },
+  { type:'out', cls:'cl-dim',  text:'[*] Connecting...' },
+  { type:'out', cls:'cl-ok',   text:'[+] Connection established.' },
+  { type:'out', cls:'cl-warn', text:'[!] Firewall detected. Switching stealth mode...' },
+  { type:'out', cls:'cl-ok',   text:'[+] Bypassing authentication...' },
+  { type:'out', cls:'cl-hi',   text:'[+] ROOT ACCESS GRANTED. UID=0(root)' },
+  { type:'pause', ms:120 },
+  { type:'prompt', cmd:'root@192.168.1.105:~# ', text:'./inject_escape_room.sh --arm-trap', delay:38 },
+  { type:'out', cls:'cl-dim',  text:'Injecting debug_escape v2.7.4 into kernel...' },
+  { type:'out', cls:'cl-ok',   text:'Module loaded. Trap protocol ARMED.' },
+  { type:'out', cls:'cl-hi',   text:'4 nodes infected. Awaiting operative...' },
+  { type:'pause', ms:300 },
+];
+
+(function runCmd() {
+  const out    = document.getElementById('cmd-out');
+  const curEl  = document.getElementById('cmd-cur');
+  const body   = document.getElementById('cmd-body');
+  let si = 0;  // índice de script
+
+  function scrollDown() { body.scrollTop = body.scrollHeight; }
+
+  function addLine(cls, html) {
+    const sp = document.createElement('span');
+    sp.className = 'cl ' + cls;
+    sp.innerHTML = html;
+    out.appendChild(sp);
+    scrollDown();
+  }
+
+  function nextStep() {
+    if (si >= cmdScript.length) {
+      // CMD terminado → ocultar y lanzar typing intro
       setTimeout(() => {
-        window.location.href = NEXT_PAGE_URL;
-      }, 300);
-    });
+        const sc = document.getElementById('screen-cmd');
+        sc.style.transition = 'opacity .4s';
+        sc.style.opacity = '0';
+        setTimeout(() => {
+          sc.style.display = 'none';
+          const sg = document.getElementById('screen-grub');
+          sg.style.display = 'flex';
+          startTyping(); // llama al IIFE de typing
+        }, 420);
+      }, 600);
+      return;
+    }
 
-    // ===== EVENTO: CLICK EN FALSE - ACTIVAR TRAMPA =====
-    falseBtn.addEventListener('click', () => {
-      if (isTrapped) return; // Si ya está atrapado, ignorar
-      
-      // Activar estado de trampa
-      isTrapped = true;
-      
-      // Efecto visual en botón
-      falseBtn.style.borderColor = '#ff3355';
-      falseBtn.style.color = '#ff3355';
-      falseBtn.style.boxShadow = '0 0 30px rgba(255,51,85,0.8)';
-      
-      // Efecto de partículas rojas
-      createExplosion(falseBtn.getBoundingClientRect(), ['#ff3355', '#cc2244', '#991133']);
-      
-      console.log('TRAMPA ACTIVADA! Usuario atrapado en DEBUG');
-      
-      // Mostrar pantalla de trampa con delay dramático
+    const step = cmdScript[si++];
+
+    if (step.type === 'pause') {
+      setTimeout(nextStep, step.ms);
+      return;
+    }
+
+    if (step.type === 'out') {
       setTimeout(() => {
-        activateTrap();
-      }, 500);
+        addLine(step.cls, step.text);
+        tbp();
+        setTimeout(nextStep, 25 + Math.random() * 30);
+      }, 20);
+      return;
+    }
+
+    if (step.type === 'prompt') {
+      // 1. Añadir línea de prompt vacía
+      const line = document.createElement('span');
+      line.className = 'cl cl-p';
+      out.appendChild(line);
+      scrollDown();
+
+      // 2. Escribir prompt fijo (no animado)
+      line.textContent = step.cmd;
+
+      // 3. Añadir span del comando que se va a escribir
+      const cmdSpan = document.createElement('span');
+      cmdSpan.className = 'cl-cmd';
+      line.appendChild(cmdSpan);
+
+      // 4. Mover cursor al final
+      out.appendChild(curEl); // el cursor siempre al final
+      scrollDown();
+
+      // 5. Typing del comando letra a letra
+      let ci = 0;
+      const cmd = step.text;
+      const baseDelay = step.delay || 75;
+      function typeChar() {
+        if (ci < cmd.length) {
+          cmdSpan.textContent += cmd[ci++];
+          tbp();
+          scrollDown();
+          setTimeout(typeChar, baseDelay + Math.random() * 25 - 10);
+        } else {
+          // Enter: salto de línea y pausa breve
+          beep(300, 'sine', .06, .04);
+          setTimeout(nextStep, 80);
+        }
+      }
+      setTimeout(typeChar, 220);
+      return;
+    }
+  }
+
+  nextStep();
+})();
+
+/* ════════════════════════════
+   TYPING INTRO — "DEBUG" letra a letra
+════════════════════════════ */
+function startTyping() {
+  const word   = 'DEBUG';
+  const wordEl = document.getElementById('typing-word');
+  const curEl  = document.getElementById('typing-cursor');
+  let i = 0;
+
+  // pequeña pausa inicial antes de empezar
+  setTimeout(function type() {
+    if (i < word.length) {
+      wordEl.textContent += word[i++];
+      beep(400 + i * 60, 'square', .07, .06);
+      setTimeout(type, 260 + Math.random() * 180); // ritmo humano irregular
+    } else {
+      // palabra completa: brillo, cursor se detiene, luego salta al dump
+      wordEl.classList.add('done');
+      curEl.style.animation = 'none';
+      curEl.style.opacity   = '1';
+      beep(880, 'sine', .35, .08);
+      setTimeout(() => {
+        curEl.style.opacity = '0';
+        startDump();
+      }, 900);
+    }
+  }, 600);
+}
+
+/* ════════════════════════════
+   CODE DUMP
+════════════════════════════ */
+const dumpLines = [
+  ['ok',   'Loading Linux 6.1.0-debug-escape ...'],
+  ['dim',  'Loading initial ramdisk ...'],
+  ['addr', '0000000000000000-0000000000000fff : Reserved'],
+  ['addr', '0000000000001000-000000000009efff : System RAM'],
+  ['addr', '00000000000a0000-00000000000bffff : PCI Bus 0000:00'],
+  ['ok',   '[    0.000000] Booting paravirtualized kernel on bare hardware'],
+  ['ok',   '[    0.000000] setup_percpu: NR_CPUS:8192 nr_cpu_ids:4 nr_cpumask_bits:8192'],
+  ['dim',  '[    0.000000] PERCPU: Embedded 31 pages/cpu @ffff88013fc00000 s86184 r8192 d28712'],
+  ['ok',   '[    0.008000] RCU: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=4'],
+  ['ok',   '[    0.032000] debug_escape: module v2.7.4 — initializing...'],
+  ['dim',  '[    0.033412] ACPI: IRQ0 used by override.'],
+  ['dim',  '[    0.033412] ACPI: IRQ9 used by override.'],
+  ['ok',   '[    0.041000] PCI: Using configuration type 1 for base access'],
+  ['warn', '[    0.041200] WARN: memory region 0xDEADC0DE flagged UNSAFE — trap_protocol watching'],
+  ['ok',   '[    0.055000] NET: Registered PF_INET protocol family'],
+  ['ok',   '[    0.055100] NET: Registered PF_INET6 protocol family'],
+  ['ok',   '[    0.070000] clocksource: tsc-early: mask 0xffffffffffffffff max_cycles 0x3b0192'],
+  ['addr', 'ffff88013fc00000-ffff88013fc7ffff : percpu[0]'],
+  ['addr', 'ffff88013fc80000-ffff88013fcfffff : percpu[1]'],
+  ['ok',   '[    0.082000] Initializing cgroup subsys cpuset'],
+  ['ok',   '[    0.082100] Initializing cgroup subsys memory'],
+  ['dim',  '[    0.082200] Initializing cgroup subsys io'],
+  ['ok',   '[    0.084000] debug_escape: loading escape_module.ko ...'],
+  ['err',  '[    0.085441] BUG: kernel NULL pointer dereference at 0x00000000deadbeef'],
+  ['err',  '[    0.085442]   IP: escape_module_init+0x3a/0x70 [debug_escape]'],
+  ['err',  '[    0.085443]   PGD 0 P4D 0'],
+  ['err',  '[    0.085444]   Oops: 0000 [#1] SMP PTI — ATTEMPTING RECOVERY...'],
+  ['warn', '[    0.086000] WARN: trap_protocol v2 armed — session lock ENABLED'],
+  ['ok',   '[    0.086500] debug_escape: recovery successful — core patched'],
+  ['ok',   '[    0.090000] input: ImPS/2 Generic Explorer Mouse as /devices/platform/i8042'],
+  ['ok',   '[    0.092000] random: crng init done'],
+  ['dim',  '[    0.093000] ALSA device list: No soundcards found.'],
+  ['ok',   '[    0.099000] Freeing unused kernel memory: 2376K'],
+  ['ok',   '[    0.104000] debug_escape: all subsystems ONLINE'],
+  ['ok',   '[    0.105000] debug_escape: trap_protocol → ARMED'],
+  ['ok',   '[    0.106000] debug_escape: player_session → OPEN'],
+  ['ok',   '[    0.107000] debug_escape: 4 infected nodes detected — awaiting operative'],
+  ['dim',  '[    0.108000] Starting system message bus: dbus.'],
+  ['ok',   '[    0.120000] ┌──────────────────────────────────────────────┐'],
+  ['ok',   '[    0.121000] │  DEBUG ESCAPE ROOM  v2.7.4  ·  Sistema listo │'],
+  ['ok',   '[    0.122000] └──────────────────────────────────────────────┘'],
+];
+
+function startDump() {
+  const sg  = document.getElementById('screen-grub');
+  const sd  = document.getElementById('screen-dump');
+  const out = document.getElementById('dump-out');
+
+  flash('#fff', 80, () => {
+    sg.style.display = 'none';
+    sd.classList.add('show');
+
+    let i = 0;
+    function next() {
+      if (i >= dumpLines.length) { setTimeout(startMain, 700); return; }
+      const [cls, txt] = dumpLines[i++];
+      const sp = document.createElement('span');
+      sp.className = 'dl dl-' + cls;
+      sp.textContent = txt;
+      out.appendChild(sp);
+      tbp();
+      out.scrollTop = out.scrollHeight;
+      const d = cls==='err' ? 90 : cls==='warn' ? 60 : 16+Math.random()*20;
+      setTimeout(next, d);
+    }
+    next();
+  });
+}
+
+/* ════════════════════════════
+   MAIN SCREEN
+════════════════════════════ */
+function startMain() {
+  const sd = document.getElementById('screen-dump');
+  const sm = document.getElementById('screen-main');
+
+  flash('#00ff41', 220, () => {
+    sd.classList.remove('show');
+    sm.classList.add('show');
+    initRain();
+    revealMain();
+  });
+}
+
+function revealMain() {
+  const seq = [
+    ['mtitle', 0,    'on'],
+    ['msub',   320,  'on'],
+    ['div1',   620,  'on'],
+    ['intro',  820,  'on'],
+    ['div2',   1900, 'on'],
+    ['brow',   2100, 'on'],
+    ['mstatus',2350, 'on'],
+  ];
+  seq.forEach(([id, delay, cls]) => {
+    setTimeout(() => {
+      document.getElementById(id).classList.add(cls);
+      beep(380+delay/8,'sine',.07,.02);
+    }, delay);
+  });
+
+  // Activar botones cuando aparezcan
+  setTimeout(() => {
+    document.getElementById('true-btn').addEventListener('click', doTrue);
+    document.getElementById('false-btn').addEventListener('click', doFalse);
+    document.addEventListener('keydown', e => {
+      if (e.key==='Enter') doTrue();
+      if (e.key==='Escape') doFalse();
     });
+  }, 2200);
+}
 
-    // ===== ACTIVAR LA TRAMPA =====
-    function activateTrap() {
-      // Mostrar pantalla de trampa
-      trapScreen.classList.add('active');
-      
-      // Reproducir sonido de error (opcional, si tienes archivos de audio)
-      playErrorSound();
-      
-      // Iniciar cuenta regresiva
-      startCountdown(TRAP_COUNTDOWN_SECONDS);
-      
-      // Efecto de glitch intenso
-      triggerIntenseGlitch();
-      
-      // Deshabilitar cualquier interacción con la pantalla inicial
-      document.getElementById('initial-screen').style.pointerEvents = 'none';
-      document.getElementById('initial-screen').style.opacity = '0.3';
-      
-      // Prevenir navegación hacia atrás
-      history.pushState(null, null, location.href);
-      window.onpopstate = function() {
-        history.pushState(null, null, location.href);
-      };
+/* ════════════════════════════
+   BOTONES
+════════════════════════════ */
+function doTrue() {
+  cbp();
+  const b = document.getElementById('true-btn');
+  b.textContent = '[ CONECTANDO... ]';
+  b.style.borderColor = 'var(--g)';
+  b.style.background  = 'rgba(0,255,65,.2)';
+  burst(b.getBoundingClientRect(), ['#00ff41','#00cc33','#aaffbb']);
+  setTimeout(() => { window.location.href = NEXT; }, 380);
+}
+
+let trapped = false;
+function doFalse() {
+  if (trapped) return;
+  trapped = true;
+  ebp();
+  cur.classList.add('red');
+  const b = document.getElementById('false-btn');
+  burst(b.getBoundingClientRect(), ['#ff3355','#cc2244','#ff8899']);
+  b.style.borderColor = 'var(--red)';
+  b.style.color       = 'var(--red)';
+  setTimeout(activateTrap, 500);
+}
+
+/* ════════════════════════════
+   TRAMPA
+════════════════════════════ */
+function activateTrap() {
+  const st = document.getElementById('screen-trap');
+  st.classList.add('show');
+  document.getElementById('screen-main').style.opacity = '.15';
+  history.pushState(null,'',location.href);
+  window.onpopstate = () => history.pushState(null,'',location.href);
+  document.addEventListener('contextmenu', e => e.preventDefault());
+  trapCount(10);
+}
+
+function trapCount(sec) {
+  let t = sec;
+  const el = document.getElementById('trap-n');
+  el.textContent = t;
+  const iv = setInterval(() => {
+    t--;
+    el.textContent = t;
+    kbp(t);
+    if (t<=3) {
+      el.classList.add('w');
+      document.body.style.animation = 'shake .2s infinite';
     }
+    if (t<=0) { clearInterval(iv); completeTrap(); }
+  }, 1000);
+}
 
-    // ===== CUENTA REGRESIVA =====
-    function startCountdown(seconds) {
-      let remaining = seconds;
-      countdownTimer.textContent = remaining;
-      
-      countdownInterval = setInterval(() => {
-        remaining--;
-        countdownTimer.textContent = remaining;
-        
-        // Efecto de advertencia en últimos 3 segundos
-        if (remaining <= 3) {
-          countdownTimer.classList.add('warning');
-          
-          // Efecto de temblor en pantalla
-          document.body.style.animation = 'shake 0.2s infinite';
-        }
-        
-        // Cuando llega a 0
-        if (remaining <= 0) {
-          clearInterval(countdownInterval);
-          completeTrap();
-        }
-      }, 1000);
-    }
+function completeTrap() {
+  beep(880,'sine',.5,.08);
+  document.getElementById('trap-msg').innerHTML =
+    '<p style="color:var(--g)">✓ Transferencia completada.</p>' +
+    '<p>Iniciando <strong>Sala 1</strong>...</p>';
+  flash('#00ff41', 700, () => setTimeout(()=>{ window.location.href=NEXT; },300));
+}
 
-    // ===== COMPLETAR LA TRAMPA - REDIRIGIR =====
-    function completeTrap() {
-      // Efecto final
-      countdownTimer.textContent = "0";
-      
-      console.log('Transferencia completada. Redirigiendo a room 1...');
-      
-      // Mensaje final
-      const trapMessage = document.querySelector('.trap-message');
-      if (trapMessage) {
-        trapMessage.innerHTML = '<p style="color: #00ff41;">✓ Transferencia completada</p><p>Iniciando Sala 1...</p>';
-      }
-      
-      // Efecto de flash blanco
-      const flash = document.createElement('div');
-      flash.style.cssText = `
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: #00ff41;
-        z-index: 999;
-        opacity: 0;
-        pointer-events: none;
-      `;
-      document.body.appendChild(flash);
-      
-      flash.animate([
-        { opacity: 0 },
-        { opacity: 0.8, offset: 0.5 },
-        { opacity: 0 }
-      ], {
-        duration: 800,
-        easing: 'ease-in-out'
-      }).onfinish = () => {
-        // Redirigir después del efecto
-        setTimeout(() => {
-          window.location.href = NEXT_PAGE_URL;
-        }, 400);
-      };
-    }
+/* ════════════════════════════
+   FLASH
+════════════════════════════ */
+function flash(color, dur, cb) {
+  const f = document.getElementById('flash');
+  f.style.background = color;
+  f.animate(
+    [{opacity:0},{opacity:.65,offset:.4},{opacity:0}],
+    {duration:dur, easing:'ease-in-out'}
+  ).onfinish = cb;
+}
 
-    // ===== EFECTO DE EXPLOSIÓN DE PARTÍCULAS =====
-    function createExplosion(rect, colors = ['#00ff41', '#00cc33', '#00aa22']) {
-      const centerX = rect.left + rect.width / 2;
-      const centerY = rect.top + rect.height / 2;
-      
-      for (let i = 0; i < 20; i++) {
-        const particle = document.createElement('div');
-        particle.style.cssText = `
-          position: fixed;
-          left: ${centerX}px;
-          top: ${centerY}px;
-          width: ${4 + Math.random() * 6}px;
-          height: ${4 + Math.random() * 6}px;
-          background: ${colors[Math.floor(Math.random() * colors.length)]};
-          border-radius: 50%;
-          pointer-events: none;
-          z-index: 200;
-          box-shadow: 0 0 8px ${colors[Math.floor(Math.random() * colors.length)]};
-        `;
-        
-        document.body.appendChild(particle);
-        
-        const angle = (Math.random() * 360) * (Math.PI / 180);
-        const velocity = 80 + Math.random() * 120;
-        const tx = Math.cos(angle) * velocity;
-        const ty = Math.sin(angle) * velocity;
-        
-        particle.animate([
-          { transform: 'translate(0, 0) scale(1)', opacity: 1 },
-          { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
-        ], {
-          duration: 500 + Math.random() * 300,
-          easing: 'cubic-bezier(0, .9, .57, 1)'
-        }).onfinish = () => particle.remove();
-      }
-    }
+/* ════════════════════════════
+   PARTÍCULAS
+════════════════════════════ */
+function burst(rect, colors) {
+  const cx=rect.left+rect.width/2, cy=rect.top+rect.height/2;
+  for(let i=0;i<22;i++){
+    const p=document.createElement('div');
+    const s=3+Math.random()*5, c=colors[Math.floor(Math.random()*colors.length)];
+    p.style.cssText=`position:fixed;left:${cx}px;top:${cy}px;width:${s}px;height:${s}px;
+      background:${c};border-radius:50%;pointer-events:none;z-index:300;
+      box-shadow:0 0 5px ${c};`;
+    document.body.appendChild(p);
+    const a=Math.random()*Math.PI*2, v=65+Math.random()*130;
+    p.animate([
+      {transform:'translate(0,0) scale(1)',opacity:1},
+      {transform:`translate(${Math.cos(a)*v}px,${Math.sin(a)*v}px) scale(0)`,opacity:0}
+    ],{duration:440+Math.random()*260,easing:'cubic-bezier(0,.9,.57,1)'}).onfinish=()=>p.remove();
+  }
+}
 
-    // ===== EFECTO DE GLITCH INTENSO =====
-    function triggerIntenseGlitch() {
-      const glitch = document.querySelector('.trap-glitch');
-      if (glitch) {
-        glitch.style.animation = 'glitchOverlay 0.1s infinite';
-        
-        setTimeout(() => {
-          glitch.style.animation = 'glitchOverlay 0.3s infinite';
-        }, 2000);
-      }
-    }
+/* ════════════════════════════
+   CODE RAIN
+════════════════════════════ */
+function initRain() {
+  const ct = document.getElementById('rain');
+  const snp = [
+    'let i=0;','const x={};','if(err)throw e;','return true;',
+    'await fetch()','=> {}','null','undefined','NaN','void 0',
+    '[ERR]500','[OK]200','console.log()','break;','continue;',
+    '===','!==','=>','++','--','&&','||','?.','??','...',
+    '0x'+Math.random().toString(16).substr(2,6).toUpperCase(),
+    'bug_found=true;','while(alive){}','if(solved)next();',
+    'segfault','malloc()','free()','ptr=NULL;',
+    'escape=null;','trap.arm();','lock.session();',
+    'typeof','instanceof','delete','new Error()','catch(e){}',
+  ];
+  const vs = ['rb','rm','rd'];
+  const n  = window.innerWidth < 700 ? 10 : 22;
 
-    // ===== SONIDO DE ERROR (opcional) =====
-    function playErrorSound() {
-      // Si quieres añadir sonido, crea un AudioContext o usa un archivo
-      // Por ahora solo log en consola
-      console.log('🔊 [SONIDO] Error beep - Too late!');
-      
-      // Ejemplo con Web Audio API (sonido beep generado)
-      try {
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        const oscillator = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        
-        oscillator.type = 'sawtooth';
-        oscillator.frequency.value = 150;
-        gainNode.gain.value = 0.1;
-        
-        oscillator.start();
-        
-        // Efecto de descenso
-        oscillator.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.5);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
-        
-        oscillator.stop(audioCtx.currentTime + 0.5);
-      } catch (e) {
-        // Si falla, ignorar (no todos los navegadores permiten audio sin interacción)
-      }
-    }
+  function mk() {
+    const el = document.createElement('div');
+    el.className = 'rcol ' + vs[Math.floor(Math.random()*3)];
+    el.style.left = Math.random()*97+'%';
+    const dur = 13+Math.random()*17;
+    el.style.animationDuration = dur+'s';
+    el.style.animationDelay    = Math.random()*3+'s';
+    let t='';
+    for(let i=0;i<22+Math.floor(Math.random()*14);i++)
+      t+=(Math.random()>.3 ? '  '.repeat(Math.floor(Math.random()*2))+snp[Math.floor(Math.random()*snp.length)] : '')+'\n';
+    el.textContent = t;
+    ct.appendChild(el);
+    setTimeout(()=>el.remove(),(dur+4)*1000);
+  }
 
-    // ===== GENERADOR DE CÓDIGO DEBUG VERDE =====
-    function initCodeRain() {
-      const container = document.getElementById('codeRain');
-      if (!container) return;
-      
-      // Snippets de código realistas para temática DEBUG
-      const codeSnippets = [
-        // JavaScript
-        'let i = 0;', 'const x = {};', 'function debug(){}', 'return true;',
-        'if (err) throw e;', 'console.log("✓");', 'await fetch()', '=> { }',
-        // Errores y logs
-        'ERROR: null pointer', 'WARN: memory leak', 'DEBUG: step 42', '✓ Compiled',
-        '[OK] 200 OK', '[ERR] 500', 'Stack overflow!', 'Segmentation fault',
-        // Estructuras
-        '{ }', '[ ]', '( )', '< />', '/* comment */', '// TODO: fix',
-        // Operadores
-        '===', '!==', '=>', '++', '--', '&&', '||', '?.', '??',
-        // Hex y binario
-        '0x' + Math.random().toString(16).substr(2,6).toUpperCase(),
-        '0b' + Array(8).fill(0).map(()=>Math.round(Math.random())).join(''),
-        // Variables temáticas
-        'bug_found = true;', 'escape_room.load();', 'player.health--;', 
-        'while(alive) { debug(); }', 'if (solved) nextLevel();',
-        // Mensajes de trampa
-        'NO_ESCAPE = true;', 'TRAP_ACTIVATED;', 'TRANSFER_FORCED;',
-        'system.lockdown();', 'escape_route = null;'
-      ];
-
-      // Configuración
-      const streamCount = window.innerWidth < 768 ? 10 : 18;
-      const variants = ['variant-bright', 'variant-dim', 'variant-fade'];
-
-      function createStream() {
-        const stream = document.createElement('div');
-        stream.className = `code-stream ${variants[Math.floor(Math.random() * variants.length)]}`;
-        
-        const leftPos = Math.random() * 95 + 2;
-        stream.style.left = `${leftPos}%`;
-        
-        const duration = 18 + Math.random() * 22;
-        stream.style.animationDuration = `${duration}s`;
-        
-        const drift = (Math.random() - 0.5) * 30;
-        stream.style.setProperty('--drift', `${drift}px`);
-        
-        stream.style.animationDelay = `${Math.random() * 5}s`;
-        
-        let content = '';
-        const linesCount = 15 + Math.floor(Math.random() * 20);
-        
-        for (let i = 0; i < linesCount; i++) {
-          if (Math.random() > 0.3) {
-            const snippet = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
-            const indent = '  '.repeat(Math.floor(Math.random() * 3));
-            content += indent + snippet + '\n';
-          } else {
-            content += '\n';
-          }
-        }
-        
-        stream.textContent = content;
-        container.appendChild(stream);
-        
-        setTimeout(() => {
-          if (stream.parentNode) stream.remove();
-        }, (duration + 6) * 1000);
-      }
-
-      for (let i = 0; i < streamCount; i++) {
-        setTimeout(createStream, i * 300);
-      }
-
-      const spawnInterval = setInterval(() => {
-        if (document.visibilityState === 'visible') createStream();
-      }, 1200);
-
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') clearInterval(spawnInterval);
-      });
-
-      let resizeTimeout;
-      window.addEventListener('resize', () => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => {
-          container.innerHTML = '';
-          clearInterval(spawnInterval);
-          initCodeRain();
-        }, 250);
-      });
-    }
-
-    // ===== PARTÍCULAS FLOTANTES DE FONDO =====
-    function initFloatingParticles() {
-      const particleCount = window.innerWidth < 768 ? 15 : 25;
-      
-      for (let i = 0; i < particleCount; i++) {
-        const particle = document.createElement('div');
-        particle.className = 'floating-particle';
-        
-        const size = 2 + Math.random() * 4;
-        const left = Math.random() * 100;
-        const duration = 20 + Math.random() * 30;
-        const delay = Math.random() * 20;
-        
-        particle.style.cssText = `
-          width: ${size}px;
-          height: ${size}px;
-          left: ${left}%;
-          animation-duration: ${duration}s;
-          animation-delay: -${delay}s;
-        `;
-        
-        particlesContainer.appendChild(particle);
-      }
-    }
-
-    // ===== CSS PARA EFECTO SHAKE =====
-    const shakeStyle = document.createElement('style');
-    shakeStyle.textContent = `
-      @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        25% { transform: translateX(-5px); }
-        75% { transform: translateX(5px); }
-      }
-    `;
-    document.head.appendChild(shakeStyle);
-
-    // ===== INICIALIZACIÓN =====
-    document.addEventListener('DOMContentLoaded', () => {
-      // Iniciar efectos
-      initCodeRain();
-      initFloatingParticles();
-      
-      // Efecto de "boot" en consola
-      console.log('%c DEBUG SYSTEM v1.0 ', 'background: #00ff41; color: #0a0a0f; font-weight: bold; padding: 5px;');
-      console.log('%c  ADVERTENCIA: No hay salida una vez que entras  ', 'background: #ff3355; color: #0a0a0f; font-weight: bold; padding: 5px;');
-      
-      // Accesibilidad: Enter para TRUE
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !isTrapped) {
-          trueBtn.click();
-        }
-      });
-      
-      // Prevenir clic derecho (opcional, para más inmersión)
-      document.addEventListener('contextmenu', (e) => {
-        if (isTrapped) {
-          e.preventDefault();
-          console.log(' No hay escape. Completa los niveles.');
-        }
-      });
-    });
-  </script>
+  for(let i=0;i<n;i++) setTimeout(mk, i*240);
+  setInterval(()=>{ if(document.visibilityState==='visible') mk(); }, 850);
+}
+</script>
 </body>
 </html>
