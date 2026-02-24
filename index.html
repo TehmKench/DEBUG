@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEBUG - Escape Room</title>
+
+  <style>
+    /* ===== RESET Y BASE ===== */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Courier New', monospace;
+      background: #0a0a0f;
+      color: #00ff41;
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+    }
+
+    /* ===== FONDO OSCURO CON GRADIENTE SUTIL ===== */
+    .bg-dark {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: 
+        radial-gradient(ellipse at 50% 50%, rgba(0,255,65,0.03) 0%, transparent 70%),
+        linear-gradient(180deg, #0a0a0f 0%, #0d1117 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ===== EFECTO ESTÁTICA DE FONDO ===== */
+    .static-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: 
+        repeating-radial-gradient(#0a0a0f 0, #0d1117 1px, transparent 2px, transparent 4px),
+        repeating-linear-gradient(45deg, rgba(0,255,65,0.02) 0, transparent 10px);
+      opacity: 0.08;
+      pointer-events: none;
+      z-index: 1;
+      animation: staticShift 0.15s infinite steps(2);
+    }
+    
+    @keyframes staticShift {
+      0% { background-position: 0 0, 0 0; }
+      100% { background-position: 5px 5px, 10px 10px; }
+    }
+
+    /* ===== LLUVIA DE CÓDIGO VERDE ===== */
+    .code-rain {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 2;
+      overflow: hidden;
+    }
+
+    .code-stream {
+      position: absolute;
+      top: -150px;
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      line-height: 1.4;
+      white-space: pre;
+      color: #00ff41;
+      text-shadow: 0 0 5px rgba(0,255,65,0.5);
+      animation-name: fall;
+      animation-timing-function: linear;
+      animation-iteration-count: infinite;
+      user-select: none;
+      pointer-events: none;
+    }
+
+    /* Variaciones de intensidad verde */
+    .code-stream.variant-bright { 
+      color: #00ff41; 
+      text-shadow: 0 0 8px #00ff41, 0 0 15px rgba(0,255,65,0.5);
+      opacity: 1;
+    }
+    .code-stream.variant-dim { 
+      color: #00aa22; 
+      text-shadow: 0 0 3px rgba(0,255,65,0.3);
+      opacity: 0.6;
+    }
+    .code-stream.variant-fade { 
+      color: #006611; 
+      opacity: 0.4;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-150px) translateX(0);
+        opacity: 0;
+      }
+      10% { opacity: 1; }
+      90% { opacity: 1; }
+      100% {
+        transform: translateY(110vh) translateX(var(--drift));
+        opacity: 0;
+      }
+    }
+
+    /* ===== PANTALLA INICIAL ===== */
+    .screen {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 40px 20px;
+      max-width: 800px;
+      width: 90%;
+    }
+
+    /* Título DEBUG con efecto glitch VERDE */
+    .debug-title {
+      font-size: clamp(3rem, 12vw, 6rem);
+      font-weight: 900;
+      letter-spacing: 0.3em;
+      margin-bottom: 30px;
+      color: #00ff41;
+      text-shadow: 
+        0 0 10px #00ff41,
+        0 0 20px #00ff41,
+        0 0 40px rgba(0,255,65,0.5);
+      animation: titleGlow 2s ease-in-out infinite alternate;
+      position: relative;
+    }
+
+    .debug-title::before,
+    .debug-title::after {
+      content: "DEBUG";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      clip-path: inset(0 0 0 0);
+    }
+
+    .debug-title::before {
+      color: #00ff41;
+      animation: glitchTop 2s infinite linear alternate-reverse;
+      opacity: 0.7;
+      text-shadow: 0 0 10px #00ff41;
+    }
+
+    .debug-title::after {
+      color: #00cc33;
+      animation: glitchBottom 2.5s infinite linear alternate-reverse;
+      opacity: 0.7;
+      text-shadow: 0 0 10px #00cc33;
+    }
+
+    @keyframes titleGlow {
+      from { 
+        text-shadow: 
+          0 0 10px #00ff41,
+          0 0 20px #00ff41,
+          0 0 30px rgba(0,255,65,0.3);
+      }
+      to { 
+        text-shadow: 
+          0 0 20px #00ff41,
+          0 0 40px #00ff41,
+          0 0 60px rgba(0,255,65,0.6);
+      }
+    }
+
+    @keyframes glitchTop {
+      0% { transform: translate(0); }
+      20% { transform: translate(-2px, 2px); }
+      40% { transform: translate(-2px, -2px); }
+      60% { transform: translate(2px, 2px); }
+      80% { transform: translate(2px, -2px); }
+      100% { transform: translate(0); }
+    }
+
+    @keyframes glitchBottom {
+      0% { transform: translate(0); }
+      20% { transform: translate(2px, -2px); }
+      40% { transform: translate(-2px, 2px); }
+      60% { transform: translate(2px, 2px); }
+      80% { transform: translate(-2px, -2px); }
+      100% { transform: translate(0); }
+    }
+
+    /* Pregunta principal */
+    .question-text {
+      font-size: clamp(1.2rem, 4vw, 1.8rem);
+      margin: 20px 0 30px;
+      color: #00ff41;
+      text-shadow: 0 0 10px rgba(0,255,65,0.7);
+      animation: fadeIn 1s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Texto provocativo */
+    .provocation-text {
+      display: block;
+      font-size: clamp(0.9rem, 3vw, 1.1rem);
+      margin: 8px 0;
+      padding: 5px 15px;
+      border: 1px solid rgba(0,255,65,0.3);
+      background: rgba(0,255,65,0.05);
+      transition: all 0.3s;
+    }
+
+    .provocation-text:hover {
+      border-color: #00ff41;
+      background: rgba(0,255,65,0.1);
+      text-shadow: 0 0 8px rgba(0,255,65,0.5);
+    }
+
+    /* Botones de opción */
+    .options {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin: 40px 0;
+      flex-wrap: wrap;
+    }
+
+    .option-btn {
+      background: transparent;
+      border: 2px solid #00ff41;
+      color: #00ff41;
+      padding: 15px 50px;
+      font-size: clamp(1rem, 3vw, 1.3rem);
+      font-family: inherit;
+      font-weight: bold;
+      letter-spacing: 3px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      min-width: 150px;
+      box-shadow: 0 0 10px rgba(0,255,65,0.2);
+    }
+
+    .option-btn::before {
+      content: "";
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0,255,65,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .option-btn:hover::before {
+      left: 100%;
+    }
+
+    .option-btn:hover {
+      background: rgba(0,255,65,0.15);
+      box-shadow: 
+        0 0 15px rgba(0,255,65,0.5),
+        0 0 30px rgba(0,255,65,0.2),
+        inset 0 0 15px rgba(0,255,65,0.1);
+      transform: translateY(-2px);
+    }
+
+    .option-btn:active {
+      transform: translateY(1px);
+    }
+
+    /* Botón FALSE con estilo diferente (gris/rojo apagado) */
+    #false-btn {
+      border-color: #444;
+      color: #666;
+      box-shadow: 0 0 10px rgba(100,100,100,0.2);
+    }
+
+    #false-btn:hover {
+      border-color: #ff3355;
+      color: #ff3355;
+      background: rgba(255,51,85,0.1);
+      box-shadow: 
+        0 0 15px rgba(255,51,85,0.4),
+        inset 0 0 15px rgba(255,51,85,0.1);
+    }
+
+    /* Mensaje de sistema */
+    .system-message {
+      margin-top: 30px;
+      font-size: clamp(0.8rem, 2.5vw, 1rem);
+      color: #00ff41;
+      opacity: 0.7;
+      animation: blink 1.5s infinite;
+      text-shadow: 0 0 5px rgba(0,255,65,0.5);
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 0.7; }
+      51%, 100% { opacity: 1; }
+    }
+
+    /* ===== TRAMPA: PANTALLA DE CAPTURA ===== */
+    #trap-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(10,10,15,0.98);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 200;
+      flex-direction: column;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #trap-screen.active { 
+      display: flex; 
+      animation: trapIn 0.5s ease-out;
+    }
+
+    @keyframes trapIn {
+      0% { 
+        opacity: 0;
+        transform: scale(0.9);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.02);
+      }
+      100% { 
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    #trap-screen h2 {
+      font-size: clamp(2rem, 8vw, 4rem);
+      color: #ff3355;
+      margin-bottom: 20px;
+      text-shadow: 0 0 20px rgba(255,51,85,0.7);
+      animation: trapPulse 1s ease-in-out infinite;
+    }
+
+    @keyframes trapPulse {
+      0%, 100% { 
+        text-shadow: 0 0 20px rgba(255,51,85,0.7);
+        transform: scale(1);
+      }
+      50% { 
+        text-shadow: 0 0 40px rgba(255,51,85,1), 0 0 60px rgba(255,51,85,0.5);
+        transform: scale(1.05);
+      }
+    }
+
+    #trap-screen .trap-message {
+      font-size: clamp(1rem, 3vw, 1.4rem);
+      max-width: 700px;
+      margin-bottom: 30px;
+      line-height: 1.8;
+      color: #00ff41;
+      text-shadow: 0 0 10px rgba(0,255,65,0.5);
+    }
+
+    #trap-screen .trap-message strong {
+      color: #ff3355;
+      text-shadow: 0 0 10px rgba(255,51,85,0.7);
+    }
+
+    /* Cuenta regresiva */
+    .countdown-container {
+      margin: 30px 0;
+      padding: 20px 40px;
+      border: 2px solid #ff3355;
+      background: rgba(255,51,85,0.1);
+      border-radius: 5px;
+      box-shadow: 0 0 30px rgba(255,51,85,0.3);
+    }
+
+    .countdown-label {
+      font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+      color: #ff6677;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .countdown-timer {
+      font-size: clamp(3rem, 10vw, 6rem);
+      font-weight: 900;
+      color: #ff3355;
+      text-shadow: 
+        0 0 20px rgba(255,51,85,0.8),
+        0 0 40px rgba(255,51,85,0.5),
+        0 0 60px rgba(255,51,85,0.3);
+      animation: countdownPulse 1s ease-in-out infinite;
+      font-family: 'Courier New', monospace;
+    }
+
+    @keyframes countdownPulse {
+      0%, 100% { 
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% { 
+        opacity: 0.8;
+        transform: scale(0.98);
+      }
+    }
+
+    .countdown-timer.warning {
+      color: #ff0000;
+      animation: countdownWarning 0.3s ease-in-out infinite;
+    }
+
+    @keyframes countdownWarning {
+      0%, 100% { 
+        opacity: 1;
+        transform: scale(1);
+        text-shadow: 0 0 30px rgba(255,0,0,1);
+      }
+      50% { 
+        opacity: 0.5;
+        transform: scale(1.05);
+        text-shadow: 0 0 50px rgba(255,0,0,1), 0 0 80px rgba(255,0,0,0.5);
+      }
+    }
+
+    .trap-footer {
+      font-size: clamp(0.8rem, 2vw, 1rem);
+      color: #666;
+      margin-top: 20px;
+      font-style: italic;
+    }
+
+    /* Efecto de glitch en pantalla de trampa */
+    .trap-glitch {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 201;
+      background: 
+        linear-gradient(90deg, transparent 50%, rgba(255,51,85,0.1) 50%),
+        linear-gradient(0deg, transparent 50%, rgba(255,51,85,0.1) 50%);
+      background-size: 4px 4px;
+      opacity: 0;
+      animation: glitchOverlay 0.2s infinite;
+    }
+
+    @keyframes glitchOverlay {
+      0% { opacity: 0; transform: translate(0, 0); }
+      10% { opacity: 0.3; transform: translate(-2px, 2px); }
+      20% { opacity: 0; transform: translate(2px, -2px); }
+      30% { opacity: 0.3; transform: translate(-2px, -2px); }
+      40% { opacity: 0; transform: translate(2px, 2px); }
+      100% { opacity: 0; transform: translate(0, 0); }
+    }
+
+    /* ===== SCANLINE EFFECT ===== */
+    .scanlines {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.15) 0px,
+        rgba(0, 0, 0, 0.15) 1px,
+        transparent 1px,
+        transparent 2px
+      );
+      pointer-events: none;
+      z-index: 50;
+      opacity: 0.2;
+    }
+
+    /* ===== VIGNETTE EFFECT ===== */
+    .vignette {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: radial-gradient(ellipse at center, transparent 0%, rgba(0,0,0,0.6) 100%);
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 480px) {
+      .options { flex-direction: column; align-items: center; }
+      .option-btn { width: 100%; max-width: 300px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Fondo oscuro -->
+  <div class="bg-dark"></div>
+  
+  <!-- Efecto de estática -->
+  <div class="static-overlay"></div>
+  
+  <!-- Scanlines estilo monitor CRT -->
+  <div class="scanlines"></div>
+  
+  <!-- Viñeta para profundidad -->
+  <div class="vignette"></div>
+  
+  <!-- Lluvia de código VERDE -->
+  <div class="code-rain" id="codeRain"></div>
+  
+  <!-- Partículas flotantes -->
+  <div id="particles-container"></div>
+
+  <!-- ===== PANTALLA INICIAL ===== -->
+  <div id="initial-screen" class="screen">
+    <div class="debug-title">DEBUG</div>
+    
+    <div class="question-text">
+      ¿QUIERES JUGAR A DEBUG?
+    </div>
+    
+    <pre style="text-align: center; margin: 20px 0; font-family: inherit; font-size: inherit; color: inherit; background: transparent; border: none;">
+<span class="provocation-text">MARCA TRUE SI QUIERES JUGAR</span>
+<span class="provocation-text">MARCA FALSE SI TE CONSIDERAS UN MAL INFORMÁTICO</span>
+    </pre>
+    
+    <div class="options">
+      <!-- ✅ TRUE: Redirige al HTML que tú especifiques -->
+      <button class="option-btn" id="true-btn">TRUE</button>
+      
+      <!-- ❌ FALSE: TRAMPA - No hay salida -->
+      <button class="option-btn" id="false-btn">FALSE</button>
+    </div>
+    
+    <div class="system-message">
+      > root@debug-system:~$ Esperando tu decisión...
+    </div>
+  </div>
+
+  <!-- ===== TRAMPA: PANTALLA DE CAPTURA ===== -->
+  <div id="trap-screen">
+    <div class="trap-glitch"></div>
+    
+    <h2>DEMASIADO TARDE</h2>
+    
+    <div class="trap-message">
+      <p>Ya estás dentro del sistema <strong>DEBUG</strong>.</p>
+      <p>No hay forma de salir.</p>
+      <p>Para escapar, necesitas completar todos los niveles.</p>
+      <br>
+      <p style="color: #ff6677;">Iniciando protocolo de transferencia forzada...</p>
+    </div>
+    
+    <div class="countdown-container">
+      <div class="countdown-label">Transferencia en:</div>
+      <div class="countdown-timer" id="countdown-timer">10</div>
+    </div>
+    
+    <div class="trap-footer">
+      > No puedes escapar. No hay salida. Solo adelante.
+    </div>
+  </div>
+
+  <!-- Mensaje para FALSE (ya no se usa, pero lo dejo por si acaso) -->
+  <div id="false-message" style="display: none;"></div>
+
+  <script>
+    // ===== CONFIGURACIÓN: REDIRECCIÓN =====
+    // 🎯 CAMBIA ESTA VARIABLE por la ruta de tu HTML destino
+    const NEXT_PAGE_URL = "room1.html"; // ← EDITA ESTO
+    
+    // ===== CONFIGURACIÓN: TIEMPO DE LA TRAMPA =====
+    const TRAP_COUNTDOWN_SECONDS = 10; // Segundos de cuenta regresiva
+    
+    // ===== ELEMENTOS DEL DOM =====
+    const trueBtn = document.getElementById('true-btn');
+    const falseBtn = document.getElementById('false-btn');
+    const trapScreen = document.getElementById('trap-screen');
+    const countdownTimer = document.getElementById('countdown-timer');
+    const particlesContainer = document.getElementById('particles-container');
+
+    // ===== ESTADO DEL JUEGO =====
+    let isTrapped = false;
+    let countdownInterval = null;
+
+    // ===== EVENTO: CLICK EN TRUE =====
+    trueBtn.addEventListener('click', () => {
+      if (isTrapped) return; // Si ya está atrapado, ignorar
+      
+      // Efecto visual antes de redirigir
+      trueBtn.style.transform = 'scale(0.95)';
+      trueBtn.style.background = 'rgba(0,255,65,0.3)';
+      
+      // Efecto de partículas verdes
+      createExplosion(trueBtn.getBoundingClientRect(), ['#00ff41', '#00cc33', '#00aa22']);
+      
+      console.log('Usuario aceptó jugar. Redirigiendo a:', NEXT_PAGE_URL);
+      
+      // Redirección después de pequeño delay para efecto
+      setTimeout(() => {
+        window.location.href = NEXT_PAGE_URL;
+      }, 300);
+    });
+
+    // ===== EVENTO: CLICK EN FALSE - ACTIVAR TRAMPA =====
+    falseBtn.addEventListener('click', () => {
+      if (isTrapped) return; // Si ya está atrapado, ignorar
+      
+      // Activar estado de trampa
+      isTrapped = true;
+      
+      // Efecto visual en botón
+      falseBtn.style.borderColor = '#ff3355';
+      falseBtn.style.color = '#ff3355';
+      falseBtn.style.boxShadow = '0 0 30px rgba(255,51,85,0.8)';
+      
+      // Efecto de partículas rojas
+      createExplosion(falseBtn.getBoundingClientRect(), ['#ff3355', '#cc2244', '#991133']);
+      
+      console.log('TRAMPA ACTIVADA! Usuario atrapado en DEBUG');
+      
+      // Mostrar pantalla de trampa con delay dramático
+      setTimeout(() => {
+        activateTrap();
+      }, 500);
+    });
+
+    // ===== ACTIVAR LA TRAMPA =====
+    function activateTrap() {
+      // Mostrar pantalla de trampa
+      trapScreen.classList.add('active');
+      
+      // Reproducir sonido de error (opcional, si tienes archivos de audio)
+      playErrorSound();
+      
+      // Iniciar cuenta regresiva
+      startCountdown(TRAP_COUNTDOWN_SECONDS);
+      
+      // Efecto de glitch intenso
+      triggerIntenseGlitch();
+      
+      // Deshabilitar cualquier interacción con la pantalla inicial
+      document.getElementById('initial-screen').style.pointerEvents = 'none';
+      document.getElementById('initial-screen').style.opacity = '0.3';
+      
+      // Prevenir navegación hacia atrás
+      history.pushState(null, null, location.href);
+      window.onpopstate = function() {
+        history.pushState(null, null, location.href);
+      };
+    }
+
+    // ===== CUENTA REGRESIVA =====
+    function startCountdown(seconds) {
+      let remaining = seconds;
+      countdownTimer.textContent = remaining;
+      
+      countdownInterval = setInterval(() => {
+        remaining--;
+        countdownTimer.textContent = remaining;
+        
+        // Efecto de advertencia en últimos 3 segundos
+        if (remaining <= 3) {
+          countdownTimer.classList.add('warning');
+          
+          // Efecto de temblor en pantalla
+          document.body.style.animation = 'shake 0.2s infinite';
+        }
+        
+        // Cuando llega a 0
+        if (remaining <= 0) {
+          clearInterval(countdownInterval);
+          completeTrap();
+        }
+      }, 1000);
+    }
+
+    // ===== COMPLETAR LA TRAMPA - REDIRIGIR =====
+    function completeTrap() {
+      // Efecto final
+      countdownTimer.textContent = "0";
+      
+      console.log('Transferencia completada. Redirigiendo a room 1...');
+      
+      // Mensaje final
+      const trapMessage = document.querySelector('.trap-message');
+      if (trapMessage) {
+        trapMessage.innerHTML = '<p style="color: #00ff41;">✓ Transferencia completada</p><p>Iniciando Sala 1...</p>';
+      }
+      
+      // Efecto de flash blanco
+      const flash = document.createElement('div');
+      flash.style.cssText = `
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: #00ff41;
+        z-index: 999;
+        opacity: 0;
+        pointer-events: none;
+      `;
+      document.body.appendChild(flash);
+      
+      flash.animate([
+        { opacity: 0 },
+        { opacity: 0.8, offset: 0.5 },
+        { opacity: 0 }
+      ], {
+        duration: 800,
+        easing: 'ease-in-out'
+      }).onfinish = () => {
+        // Redirigir después del efecto
+        setTimeout(() => {
+          window.location.href = NEXT_PAGE_URL;
+        }, 400);
+      };
+    }
+
+    // ===== EFECTO DE EXPLOSIÓN DE PARTÍCULAS =====
+    function createExplosion(rect, colors = ['#00ff41', '#00cc33', '#00aa22']) {
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      for (let i = 0; i < 20; i++) {
+        const particle = document.createElement('div');
+        particle.style.cssText = `
+          position: fixed;
+          left: ${centerX}px;
+          top: ${centerY}px;
+          width: ${4 + Math.random() * 6}px;
+          height: ${4 + Math.random() * 6}px;
+          background: ${colors[Math.floor(Math.random() * colors.length)]};
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 200;
+          box-shadow: 0 0 8px ${colors[Math.floor(Math.random() * colors.length)]};
+        `;
+        
+        document.body.appendChild(particle);
+        
+        const angle = (Math.random() * 360) * (Math.PI / 180);
+        const velocity = 80 + Math.random() * 120;
+        const tx = Math.cos(angle) * velocity;
+        const ty = Math.sin(angle) * velocity;
+        
+        particle.animate([
+          { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+          { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+        ], {
+          duration: 500 + Math.random() * 300,
+          easing: 'cubic-bezier(0, .9, .57, 1)'
+        }).onfinish = () => particle.remove();
+      }
+    }
+
+    // ===== EFECTO DE GLITCH INTENSO =====
+    function triggerIntenseGlitch() {
+      const glitch = document.querySelector('.trap-glitch');
+      if (glitch) {
+        glitch.style.animation = 'glitchOverlay 0.1s infinite';
+        
+        setTimeout(() => {
+          glitch.style.animation = 'glitchOverlay 0.3s infinite';
+        }, 2000);
+      }
+    }
+
+    // ===== SONIDO DE ERROR (opcional) =====
+    function playErrorSound() {
+      // Si quieres añadir sonido, crea un AudioContext o usa un archivo
+      // Por ahora solo log en consola
+      console.log('🔊 [SONIDO] Error beep - Too late!');
+      
+      // Ejemplo con Web Audio API (sonido beep generado)
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        oscillator.type = 'sawtooth';
+        oscillator.frequency.value = 150;
+        gainNode.gain.value = 0.1;
+        
+        oscillator.start();
+        
+        // Efecto de descenso
+        oscillator.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.5);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+        
+        oscillator.stop(audioCtx.currentTime + 0.5);
+      } catch (e) {
+        // Si falla, ignorar (no todos los navegadores permiten audio sin interacción)
+      }
+    }
+
+    // ===== GENERADOR DE CÓDIGO DEBUG VERDE =====
+    function initCodeRain() {
+      const container = document.getElementById('codeRain');
+      if (!container) return;
+      
+      // Snippets de código realistas para temática DEBUG
+      const codeSnippets = [
+        // JavaScript
+        'let i = 0;', 'const x = {};', 'function debug(){}', 'return true;',
+        'if (err) throw e;', 'console.log("✓");', 'await fetch()', '=> { }',
+        // Errores y logs
+        'ERROR: null pointer', 'WARN: memory leak', 'DEBUG: step 42', '✓ Compiled',
+        '[OK] 200 OK', '[ERR] 500', 'Stack overflow!', 'Segmentation fault',
+        // Estructuras
+        '{ }', '[ ]', '( )', '< />', '/* comment */', '// TODO: fix',
+        // Operadores
+        '===', '!==', '=>', '++', '--', '&&', '||', '?.', '??',
+        // Hex y binario
+        '0x' + Math.random().toString(16).substr(2,6).toUpperCase(),
+        '0b' + Array(8).fill(0).map(()=>Math.round(Math.random())).join(''),
+        // Variables temáticas
+        'bug_found = true;', 'escape_room.load();', 'player.health--;', 
+        'while(alive) { debug(); }', 'if (solved) nextLevel();',
+        // Mensajes de trampa
+        'NO_ESCAPE = true;', 'TRAP_ACTIVATED;', 'TRANSFER_FORCED;',
+        'system.lockdown();', 'escape_route = null;'
+      ];
+
+      // Configuración
+      const streamCount = window.innerWidth < 768 ? 10 : 18;
+      const variants = ['variant-bright', 'variant-dim', 'variant-fade'];
+
+      function createStream() {
+        const stream = document.createElement('div');
+        stream.className = `code-stream ${variants[Math.floor(Math.random() * variants.length)]}`;
+        
+        const leftPos = Math.random() * 95 + 2;
+        stream.style.left = `${leftPos}%`;
+        
+        const duration = 18 + Math.random() * 22;
+        stream.style.animationDuration = `${duration}s`;
+        
+        const drift = (Math.random() - 0.5) * 30;
+        stream.style.setProperty('--drift', `${drift}px`);
+        
+        stream.style.animationDelay = `${Math.random() * 5}s`;
+        
+        let content = '';
+        const linesCount = 15 + Math.floor(Math.random() * 20);
+        
+        for (let i = 0; i < linesCount; i++) {
+          if (Math.random() > 0.3) {
+            const snippet = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
+            const indent = '  '.repeat(Math.floor(Math.random() * 3));
+            content += indent + snippet + '\n';
+          } else {
+            content += '\n';
+          }
+        }
+        
+        stream.textContent = content;
+        container.appendChild(stream);
+        
+        setTimeout(() => {
+          if (stream.parentNode) stream.remove();
+        }, (duration + 6) * 1000);
+      }
+
+      for (let i = 0; i < streamCount; i++) {
+        setTimeout(createStream, i * 300);
+      }
+
+      const spawnInterval = setInterval(() => {
+        if (document.visibilityState === 'visible') createStream();
+      }, 1200);
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') clearInterval(spawnInterval);
+      });
+
+      let resizeTimeout;
+      window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          container.innerHTML = '';
+          clearInterval(spawnInterval);
+          initCodeRain();
+        }, 250);
+      });
+    }
+
+    // ===== PARTÍCULAS FLOTANTES DE FONDO =====
+    function initFloatingParticles() {
+      const particleCount = window.innerWidth < 768 ? 15 : 25;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'floating-particle';
+        
+        const size = 2 + Math.random() * 4;
+        const left = Math.random() * 100;
+        const duration = 20 + Math.random() * 30;
+        const delay = Math.random() * 20;
+        
+        particle.style.cssText = `
+          width: ${size}px;
+          height: ${size}px;
+          left: ${left}%;
+          animation-duration: ${duration}s;
+          animation-delay: -${delay}s;
+        `;
+        
+        particlesContainer.appendChild(particle);
+      }
+    }
+
+    // ===== CSS PARA EFECTO SHAKE =====
+    const shakeStyle = document.createElement('style');
+    shakeStyle.textContent = `
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+      }
+    `;
+    document.head.appendChild(shakeStyle);
+
+    // ===== INICIALIZACIÓN =====
+    document.addEventListener('DOMContentLoaded', () => {
+      // Iniciar efectos
+      initCodeRain();
+      initFloatingParticles();
+      
+      // Efecto de "boot" en consola
+      console.log('%c DEBUG SYSTEM v1.0 ', 'background: #00ff41; color: #0a0a0f; font-weight: bold; padding: 5px;');
+      console.log('%c  ADVERTENCIA: No hay salida una vez que entras  ', 'background: #ff3355; color: #0a0a0f; font-weight: bold; padding: 5px;');
+      
+      // Accesibilidad: Enter para TRUE
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !isTrapped) {
+          trueBtn.click();
+        }
+      });
+      
+      // Prevenir clic derecho (opcional, para más inmersión)
+      document.addEventListener('contextmenu', (e) => {
+        if (isTrapped) {
+          e.preventDefault();
+          console.log(' No hay escape. Completa los niveles.');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
