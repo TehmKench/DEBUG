@@ -1,7 +1,7 @@
 # DEBUG
 
 ![Estado](https://img.shields.io/badge/estado-en%20desarrollo-yellow)
-![Versión](https://img.shields.io/badge/versión-1.0.0-blue)
+![Versión](https://img.shields.io/badge/versión-2.0.0-blue)
 
 📖 Acerca del Proyecto
 
