@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nivel 1 - El Bucle Infinito</title>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="js/player.js"></script>
+  <style>
+    body { margin: 0; overflow: hidden; cursor: none; }
+  </style>
+</head>
+<body>
+
+<a-scene
+  cursor="rayOrigin: mouse"
+  raycaster="objects: .clickable"
+  background="color: #240030"
+  fog="type: exponential; color: #240030; density: 0.02">
+
+  <!-- LUCES -->
+  <a-light type="ambient" intensity="0.8" color="#ff00ff"></a-light>
+  <a-light type="point" position="0 8 0" intensity="2" color="#00ffff"></a-light>
+
+  <!-- PLAYER -->
+  <a-entity id="player" position="0 1.6 8" wasd-collision>
+    <a-entity camera look-controls="pointerLockEnabled: true">
+      <a-cursor color="#00ffff"></a-cursor>
+    </a-entity>
+  </a-entity>
+
+  <!-- SUELO -->
+  <a-plane rotation="-90 0 0" width="80" height="80" color="#000"></a-plane>
+  <a-plane
+    rotation="-90 0 0"
+    width="80"
+    height="80"
+    material="wireframe: true; color: #ff00aa; emissive: #ff00aa; emissiveIntensity: 3;">
+  </a-plane>
+
+  <!-- TORUS DELANTE del jugador (z:-15) -->
+  <a-torus
+    id="torusGLB"
+    position="0 3 -15"
+    radius="2"
+    radius-tubular="0.2"
+    material="wireframe: true; color: #333; emissive: #111; emissiveIntensity: 1;">
+  </a-torus>
+
+  <!-- TORUS DETRAS del jugador (z:15) — Volver al lobby -->
+  <a-torus
+    id="backLobby"
+    class="clickable"
+    position="0 3 15"
+    radius="2"
+    radius-tubular="0.2"
+    material="wireframe: true; color: #ff00ff; emissive: #ff00ff; emissiveIntensity: 2;">
+  </a-torus>
+
+  <!-- PANEL QUIZ -->
+  <a-entity id="quizPanel" position="0 4 -10">
+    <a-plane
+      width="10"
+      height="6"
+      material="color: #111; wireframe: true; emissive: #00ffff; emissiveIntensity: 1.5;">
+    </a-plane>
+
+    <a-text id="qNeon1" position="0 2 0.11"
+      align="center" width="9" color="#ffffff"
+      font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"
+      wrap-count="30" value="Cargando...">
+    </a-text>
+    <a-text id="qNeon2" position="0 2 0.10"
+      align="center" width="9.4" color="#00ffff" opacity="0.8"
+      font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"
+      wrap-count="30" value="Cargando...">
+    </a-text>
+    <a-text id="qNeon3" position="0 2 0.08"
+      align="center" width="10" color="#88ffff" opacity="0.3"
+      font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"
+      wrap-count="30" value="Cargando...">
+    </a-text>
+
+    <!-- BOTON A -->
+    <a-entity position="0 0.5 0.1">
+      <a-plane id="btnA" class="clickable" width="8" height="1.2"
+        material="color: #220022; emissive: #ff00aa; emissiveIntensity: 1;">
+      </a-plane>
+      <a-text id="aNeon1" position="0 0 0.21" align="center" width="7" color="#ffffff"
+        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="35" value="A">
+      </a-text>
+      <a-text id="aNeon2" position="0 0 0.20" align="center" width="7.3" color="#ff00ff" opacity="0.8"
+        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="35" value="A">
+      </a-text>
+      <a-text id="aNeon3" position="0 0 0.18" align="center" width="7.8" color="#ff88ff" opacity="0.3"
+        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="35" value="A">
+      </a-text>
+    </a-entity>
+
+    <!-- BOTON B -->
+    <a-entity position="0 -1.2 0.1">
+      <a-plane id="btnB" class="clickable" width="8" height="1.2"
+        material="color: #220022; emissive: #ff00aa; emissiveIntensity: 1;">
+      </a-plane>
+      <a-text id="bNeon1" position="0 0 0.21" align="center" width="7" color="#ffffff"
+        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="35" value="B">
+      </a-text>
+      <a-text id="bNeon2" position="0 0 0.20" align="center" width="7.3" color="#ff00ff" opacity="0.8"
+        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="35" value="B">
+      </a-text>
+      <a-text id="bNeon3" position="0 0 0.18" align="center" width="7.8" color="#ff88ff" opacity="0.3"
+        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="35" value="B">
+      </a-text>
+    </a-entity>
+  </a-entity>
+
+</a-scene>
+
+<script>
+  const questions = [
+    {
+      q: "1. Que palabra se usa para repetir una accion varias veces?",
+      a: " exit",
+      b: " loop / for",
+      correct: "b"
+    },
+    {
+      q: "2. Si un bucle nunca termina, que problema ocurre?",
+      a: " Bucle infinito",
+      b: " Compilacion rapida",
+      correct: "a"
+    },
+    {
+      q: "3. Que valor logico significa verdadero?",
+      a: " false",
+      b: " true",
+      correct: "b"
+    },
+    {
+      q: "4. Como se llama el error cuando el programa no puede continuar?",
+      a: " Comentario",
+      b: " Error o excepcion",
+      correct: "b"
+    },
+    {
+      q: "5. Que simbolo se usa normalmente para comentar una linea?",
+      a: " //",
+      b: " %%",
+      correct: "a"
+    }
+  ];
+
+  // ════════════════════════════════════════════════════
+  // ▼▼▼  PON AQUI LA RUTA DE TU MODELO GLB  ▼▼▼
+  const GLB_SRC = "models/TU_MODELO.glb";
+  // ▲▲▲  PON AQUI LA RUTA DE TU MODELO GLB  ▲▲▲
+  // ════════════════════════════════════════════════════
+
+  let current      = 0;
+  let correctCount = 0;
+  let answering    = false;
+
+  const qNeon1 = document.getElementById("qNeon1");
+  const qNeon2 = document.getElementById("qNeon2");
+  const qNeon3 = document.getElementById("qNeon3");
+  const aNeon1 = document.getElementById("aNeon1");
+  const aNeon2 = document.getElementById("aNeon2");
+  const aNeon3 = document.getElementById("aNeon3");
+  const bNeon1 = document.getElementById("bNeon1");
+  const bNeon2 = document.getElementById("bNeon2");
+  const bNeon3 = document.getElementById("bNeon3");
+  const btnA       = document.getElementById("btnA");
+  const btnB       = document.getElementById("btnB");
+  const torusGLB   = document.getElementById("torusGLB");
+  const scene      = document.querySelector("a-scene");
+
+  function loadQuestion() {
+    const q = questions[current];
+    [qNeon1, qNeon2, qNeon3].forEach(el => el.setAttribute("value", q.q));
+    [aNeon1, aNeon2, aNeon3].forEach(el => el.setAttribute("value", q.a));
+    [bNeon1, bNeon2, bNeon3].forEach(el => el.setAttribute("value", q.b));
+  }
+
+  function spawnParticles(color, worldPos) {
+    for (let i = 0; i < 20; i++) {
+      const p = document.createElement("a-sphere");
+      p.setAttribute("radius", 0.05);
+      p.setAttribute("color", color);
+      p.setAttribute("position", `${worldPos.x} ${worldPos.y} ${worldPos.z}`);
+      p.setAttribute("material",
+        `emissive: ${color}; emissiveIntensity: 3; transparent: true; opacity: 1;`
+      );
+      const tx = worldPos.x + (Math.random() - 0.5) * 4;
+      const ty = worldPos.y + Math.random() * 3;
+      const tz = worldPos.z + (Math.random() - 0.5) * 4;
+      p.setAttribute("animation__move", { property: "position", to: `${tx} ${ty} ${tz}`, dur: 600, easing: "easeOutQuad" });
+      p.setAttribute("animation__fade", { property: "material.opacity", to: 0, dur: 600, easing: "easeInQuad" });
+      scene.appendChild(p);
+      setTimeout(() => p.remove(), 700);
+    }
+  }
+
+  function answer(choice, btn) {
+    if (answering) return;
+    answering = true;
+
+    btn.setAttribute("material", "color: #550055; emissive: #ffffff; emissiveIntensity: 3;");
+
+    const isCorrect = questions[current].correct === choice;
+    const pos = new THREE.Vector3();
+    btn.object3D.getWorldPosition(pos);
+
+    spawnParticles(isCorrect ? "#00ff00" : "#ff0000", pos);
+    if (isCorrect) correctCount++;
+
+    setTimeout(() => {
+      btn.setAttribute("material", "color: #220022; emissive: #ff00aa; emissiveIntensity: 1;");
+      current++;
+      answering = false;
+      if (current < questions.length) {
+        loadQuestion();
+      } else {
+        finishQuiz();
+      }
+    }, 600);
+  }
+
+  // ─── Spawna el texto print("LLAVE") dentro del torus ─────────────────────
+  function spawnLlaveText() {
+    // Fondo del "print" — plano semitransparente estilo terminal
+    const bg = document.createElement("a-plane");
+    bg.setAttribute("id", "llaveBg");
+    bg.setAttribute("class", "clickable");
+    bg.setAttribute("position", "0 3 -15");
+    bg.setAttribute("width", "3.8");
+    bg.setAttribute("height", "1.1");
+    bg.setAttribute("material",
+      "color: #001a00; opacity: 0.85; transparent: true; emissive: #003300; emissiveIntensity: 1;");
+    scene.appendChild(bg);
+
+    // Capa 1 — núcleo blanco brillante
+    const t1 = document.createElement("a-text");
+    t1.setAttribute("value", 'print("LLAVE")');
+    t1.setAttribute("align", "center");
+    t1.setAttribute("color", "#ffffff");
+    t1.setAttribute("width", "7");
+    t1.setAttribute("position", "0 3 -14.88");
+    t1.setAttribute("font", "https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+    scene.appendChild(t1);
+
+    // Capa 2 — verde medio
+    const t2 = document.createElement("a-text");
+    t2.setAttribute("value", 'print("LLAVE")');
+    t2.setAttribute("align", "center");
+    t2.setAttribute("color", "#00ff00");
+    t2.setAttribute("width", "7.4");
+    t2.setAttribute("position", "0 3 -14.9");
+    t2.setAttribute("font", "https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+    t2.setAttribute("opacity", "0.85");
+    scene.appendChild(t2);
+
+    // Capa 3 — halo difuso verde claro
+    const t3 = document.createElement("a-text");
+    t3.setAttribute("value", 'print("LLAVE")');
+    t3.setAttribute("align", "center");
+    t3.setAttribute("color", "#88ff88");
+    t3.setAttribute("width", "8.2");
+    t3.setAttribute("position", "0 3 -14.95");
+    t3.setAttribute("font", "https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+    t3.setAttribute("opacity", "0.3");
+    scene.appendChild(t3);
+
+    // Animacion de parpadeo en el fondo (pulse emissive)
+    bg.setAttribute("animation__pulse", {
+      property: "material.emissiveIntensity",
+      from: 0.5,
+      to: 2.5,
+      dir: "alternate",
+      loop: true,
+      dur: 900,
+      easing: "easeInOutSine"
+    });
+
+    // Click en el fondo (area de hit) → spawna el GLB
+    bg.addEventListener("click", () => {
+      spawnGLB();
+      // Oculta el texto y el fondo tras el click
+      bg.setAttribute("visible", false);
+      [t1, t2, t3].forEach(t => t.setAttribute("visible", false));
+      // Cambia el torus a azul — ya fue recogida la llave
+      torusGLB.classList.remove("clickable");
+      torusGLB.setAttribute("material",
+        "wireframe: true; color: #00aaff; emissive: #00aaff; emissiveIntensity: 1.5;"
+      );
+    }, { once: true });
+  }
+
+  // ─── Spawna el modelo GLB ─────────────────────────────────────────────────
+  function spawnGLB() {
+    const model = document.createElement("a-entity");
+    model.setAttribute("gltf-model", GLB_SRC);
+    model.setAttribute("position", "0 3 -15");
+    model.setAttribute("scale", "1 1 1"); // ← ajusta si hace falta
+    model.setAttribute("animation",
+      "property: rotation; to: 0 360 0; loop: true; dur: 4000; easing: linear;"
+    );
+    scene.appendChild(model);
+  }
+
+  // ─── Fin del quiz ─────────────────────────────────────────────────────────
+  function finishQuiz() {
+    document.getElementById("quizPanel").setAttribute("visible", false);
+
+    const passed = correctCount >= Math.ceil(questions.length / 2);
+
+    if (!passed) {
+      // ── BLOQUEADO: torus rojo ──────────────────────────────────────────
+      torusGLB.setAttribute("material",
+        "wireframe: true; color: #ff0000; emissive: #ff0000; emissiveIntensity: 2;"
+      );
+
+      const l1 = document.createElement("a-text");
+      l1.setAttribute("value", "LOSER");
+      l1.setAttribute("align", "center");
+      l1.setAttribute("color", "#ffffff");
+      l1.setAttribute("width", "14");
+      l1.setAttribute("position", "0 9 -14.9");
+      l1.setAttribute("font", "https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+      scene.appendChild(l1);
+
+      const l2 = document.createElement("a-text");
+      l2.setAttribute("value", "LOSER");
+      l2.setAttribute("align", "center");
+      l2.setAttribute("color", "#ff2222");
+      l2.setAttribute("width", "15");
+      l2.setAttribute("position", "0 9 -15");
+      l2.setAttribute("font", "https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+      l2.setAttribute("opacity", "0.8");
+      scene.appendChild(l2);
+
+      const l3 = document.createElement("a-text");
+      l3.setAttribute("value", "LOSER");
+      l3.setAttribute("align", "center");
+      l3.setAttribute("color", "#ff6666");
+      l3.setAttribute("width", "17");
+      l3.setAttribute("position", "0 9 -15.08");
+      l3.setAttribute("font", "https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+      l3.setAttribute("opacity", "0.3");
+      scene.appendChild(l3);
+
+      const s1 = document.createElement("a-text");
+      s1.setAttribute("value", "QUE MAL PROGRAMADOR");
+      s1.setAttribute("align", "center");
+      s1.setAttribute("color", "#ffffff");
+      s1.setAttribute("width", "10");
+      s1.setAttribute("position", "0 7.6 -14.9");
+      s1.setAttribute("font", "https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+      scene.appendChild(s1);
+
+      const s2 = document.createElement("a-text");
+      s2.setAttribute("value", "QUE MAL PROGRAMADOR");
+      s2.setAttribute("align", "center");
+      s2.setAttribute("color", "#ff2222");
+      s2.setAttribute("width", "10.8");
+      s2.setAttribute("position", "0 7.6 -15");
+      s2.setAttribute("font", "https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+      s2.setAttribute("opacity", "0.8");
+      scene.appendChild(s2);
+
+      const s3 = document.createElement("a-text");
+      s3.setAttribute("value", "QUE MAL PROGRAMADOR");
+      s3.setAttribute("align", "center");
+      s3.setAttribute("color", "#ff6666");
+      s3.setAttribute("width", "12");
+      s3.setAttribute("position", "0 7.6 -15.08");
+      s3.setAttribute("font", "https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+      s3.setAttribute("opacity", "0.3");
+      scene.appendChild(s3);
+
+      const neonLight = document.createElement("a-light");
+      neonLight.setAttribute("type", "point");
+      neonLight.setAttribute("color", "#ff0000");
+      neonLight.setAttribute("intensity", "4");
+      neonLight.setAttribute("distance", "14");
+      neonLight.setAttribute("position", "0 8.5 -14");
+      scene.appendChild(neonLight);
+
+      return;
+    }
+
+    // ── SUPERADO: torus verde + print("LLAVE") clickable ────────────────
+    torusGLB.setAttribute("material",
+      "wireframe: true; color: #00ff00; emissive: #00ff00; emissiveIntensity: 2;"
+    );
+
+    const w1 = document.createElement("a-text");
+    w1.setAttribute("value", "BIEN");
+    w1.setAttribute("align", "center");
+    w1.setAttribute("color", "#ffffff");
+    w1.setAttribute("width", "14");
+    w1.setAttribute("position", "0 9 -14.9");
+    w1.setAttribute("font", "https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+    scene.appendChild(w1);
+
+    const w2 = document.createElement("a-text");
+    w2.setAttribute("value", "BIEN");
+    w2.setAttribute("align", "center");
+    w2.setAttribute("color", "#00ff00");
+    w2.setAttribute("width", "15");
+    w2.setAttribute("position", "0 9 -15");
+    w2.setAttribute("font", "https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+    w2.setAttribute("opacity", "0.8");
+    scene.appendChild(w2);
+
+    const w3 = document.createElement("a-text");
+    w3.setAttribute("value", "BIEN");
+    w3.setAttribute("align", "center");
+    w3.setAttribute("color", "#88ff88");
+    w3.setAttribute("width", "17");
+    w3.setAttribute("position", "0 9 -15.08");
+    w3.setAttribute("font", "https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+    w3.setAttribute("opacity", "0.3");
+    scene.appendChild(w3);
+
+    const ws1 = document.createElement("a-text");
+    ws1.setAttribute("value", "AVANZAS A LA SIGUIENTE SALA");
+    ws1.setAttribute("align", "center");
+    ws1.setAttribute("color", "#ffffff");
+    ws1.setAttribute("width", "10");
+    ws1.setAttribute("position", "0 7.6 -14.9");
+    ws1.setAttribute("font", "https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+    scene.appendChild(ws1);
+
+    const ws2 = document.createElement("a-text");
+    ws2.setAttribute("value", "AVANZAS A LA SIGUIENTE SALA");
+    ws2.setAttribute("align", "center");
+    ws2.setAttribute("color", "#00ff00");
+    ws2.setAttribute("width", "10.8");
+    ws2.setAttribute("position", "0 7.6 -15");
+    ws2.setAttribute("font", "https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+    ws2.setAttribute("opacity", "0.8");
+    scene.appendChild(ws2);
+
+    const ws3 = document.createElement("a-text");
+    ws3.setAttribute("value", "AVANZAS A LA SIGUIENTE SALA");
+    ws3.setAttribute("align", "center");
+    ws3.setAttribute("color", "#88ff88");
+    ws3.setAttribute("width", "12");
+    ws3.setAttribute("position", "0 7.6 -15.08");
+    ws3.setAttribute("font", "https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+    ws3.setAttribute("opacity", "0.3");
+    scene.appendChild(ws3);
+
+    const winLight = document.createElement("a-light");
+    winLight.setAttribute("type", "point");
+    winLight.setAttribute("color", "#00ff00");
+    winLight.setAttribute("intensity", "4");
+    winLight.setAttribute("distance", "14");
+    winLight.setAttribute("position", "0 8.5 -14");
+    scene.appendChild(winLight);
+
+    // ── Spawna el texto print("LLAVE") en el centro del torus ────────────
+    spawnLlaveText();
+  }
+
+  // ─── Listeners ───────────────────────────────────────────────────────────
+  btnA.addEventListener("click", () => answer("a", btnA));
+  btnB.addEventListener("click", () => answer("b", btnB));
+
+  document.getElementById("backLobby").addEventListener("click", () => {
+    window.location.href = "lobby.html";
+  });
+
+  // ─── Arranque ─────────────────────────────────────────────────────────────
+  loadQuestion();
+</script>
+
+</body>
+</html>
