@@ -8,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-effects@master/dist/aframe-effects.min.js"></script>
 <script src="js/player.js"></script>
 <script src="js/doors.js"></script>
+<script src="js/hotbar.js"></script>
 
 <style>
 body { margin:0; overflow:hidden; cursor:none; }
@@ -55,11 +56,20 @@ body { margin:0; overflow:hidden; cursor:none; }
   <a-box position="0 5 25" width="50" height="10" depth="0.5" visible="false" wall></a-box>
 
   <!-- PUERTAS -->
-  <a-box class="clickable" position="-6 2 10" width="3" height="4" depth="0.5" door="room:1"></a-box>
-  <a-box class="clickable" position="-6 2 -5" width="3" height="4" depth="0.5" door="room:2"></a-box>
-  <a-box class="clickable" position="6 2 10" width="3" height="4" depth="0.5" door="room:3"></a-box>
-  <a-box class="clickable" position="6 2 -5" width="3" height="4" depth="0.5" door="room:4"></a-box>
+  <a-box id="puerta1" class="clickable" position="-6 2 10" width="3" height="4" depth="0.5"></a-box>
+  <a-box id="puerta2" class="clickable" position="-6 2 -5" width="3" height="4" depth="0.5"></a-box>
+  <a-box id="puerta3" class="clickable" position="6 2 10"  width="3" height="4" depth="0.5"></a-box>
+  <a-box id="puerta4" class="clickable" position="6 2 -5"  width="3" height="4" depth="0.5"></a-box>
   <a-box class="clickable" position="0 2 -20" width="4" height="5" depth="0.5" door="room:5"></a-box>
+
+  <!-- LABELS SALAS -->
+  <a-text id="label1" position="-6 4.8 10.4"  align="center" width="4" color="#00ffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="SALA 01"></a-text>
+  <a-text id="label2" position="-6 4.8 -4.6"  align="center" width="4" color="#ff6600" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="SALA 02"></a-text>
+  <a-text id="label3" position="6 4.8 10.4"   align="center" width="4" color="#00ff44" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="SALA 03"></a-text>
+  <a-text id="label4" position="6 4.8 -4.6"   align="center" width="4" color="#ff0044" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="SALA 04"></a-text>
+  <a-text id="lock2"  position="-6 2.8 -4.6"  align="center" width="3" color="#ff0000" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="[ BLOQUEADA ]"></a-text>
+  <a-text id="lock3"  position="6 2.8 10.4"   align="center" width="3" color="#ff0000" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="[ BLOQUEADA ]"></a-text>
+  <a-text id="lock4"  position="6 2.8 -4.6"   align="center" width="3" color="#ff0000" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="[ BLOQUEADA ]"></a-text>
 
 </a-scene>
 
@@ -209,6 +219,44 @@ function spawnMatrixColumn(){
 
 setInterval(spawnMatrixColumn, 200);
 
+</script>
+
+
+<script>
+/* ========================= */
+/* PROGRESION DE SALAS       */
+/* ========================= */
+
+const SALAS_CFG = [
+  { id:"puerta1", req:null,    dest:"nivel1.html", lockEl:null,    color:"#00ffff" },
+  { id:"puerta2", req:"sala1", dest:"nivel2.html", lockEl:"lock2", color:"#ff6600" },
+  { id:"puerta3", req:"sala2", dest:"nivel3.html", lockEl:"lock3", color:"#00ff44" },
+  { id:"puerta4", req:"sala3", dest:"nivel4.html", lockEl:"lock4", color:"#ff0044" },
+];
+
+document.querySelector("a-scene").addEventListener("loaded", () => {
+  SALAS_CFG.forEach(s => {
+    const puerta    = document.getElementById(s.id);
+    const unlocked  = !s.req || sessionStorage.getItem(s.req + "_done") === "true";
+
+    if (unlocked) {
+      puerta.setAttribute("material",
+        `color:${s.color}22; emissive:${s.color}; emissiveIntensity:1.8; opacity:0.75; transparent:true;`);
+      if (s.lockEl) document.getElementById(s.lockEl).setAttribute("visible", "false");
+      puerta.addEventListener("click", () => { window.location.href = s.dest; });
+    } else {
+      puerta.setAttribute("material",
+        "color:#220000; emissive:#ff0000; emissiveIntensity:0.5; opacity:0.6; transparent:true;");
+      puerta.classList.remove("clickable");
+      puerta.addEventListener("click", () => {
+        puerta.setAttribute("material","color:#440000; emissive:#ff0000; emissiveIntensity:2.5; opacity:0.8; transparent:true;");
+        setTimeout(() =>
+          puerta.setAttribute("material","color:#220000; emissive:#ff0000; emissiveIntensity:0.5; opacity:0.6; transparent:true;")
+        , 350);
+      });
+    }
+  });
+});
 </script>
 
 </body>

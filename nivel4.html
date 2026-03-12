@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nivel 4 - El Nucleo de Hardware</title>
+  <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/hotbar.js"></script>
+  <style>
+    body { margin:0; overflow:hidden; cursor:none; }
+    #hud-wrap {
+      display:none; position:fixed; top:20px; left:50%;
+      transform:translateX(-50%); z-index:9999;
+      pointer-events:none; text-align:center; font-family:'Courier New',monospace;
+    }
+    #hud-num { font-size:36px; font-weight:bold; color:#ff0044; text-shadow:0 0 14px #ff0044; letter-spacing:.1em; }
+    #hud-bar-wrap { width:240px; height:4px; background:#ffffff11; border:1px solid #ff004433; border-radius:2px; margin:5px auto 0; overflow:hidden; }
+    #hud-bar { height:100%; width:100%; background:#ff0044; box-shadow:0 0 6px #ff0044; transition:width .2s linear, background .3s; }
+    #hud-prog { display:none; position:fixed; top:20px; right:26px; z-index:9999; font-family:'Courier New',monospace; font-size:13px; color:#ff0044; text-shadow:0 0 8px #ff0044; letter-spacing:.1em; pointer-events:none; }
+  </style>
+</head>
+<body>
+
+<div id="hud-wrap"><div id="hud-num">15</div><div id="hud-bar-wrap"><div id="hud-bar"></div></div></div>
+<div id="hud-prog">✓ 0 / 5</div>
+
+<a-scene cursor="rayOrigin:mouse" raycaster="objects:.clickable; far:30; interval:50"
+  background="color:#1a0008" fog="type:exponential; color:#1a0008; density:0.02">
+
+  <a-light type="ambient" intensity="0.6" color="#440011"></a-light>
+  <a-light type="point" position="0 8 0" intensity="2.5" color="#ff0044"></a-light>
+  <a-light type="point" position="-15 5 0" intensity="1.2" color="#ff0044" distance="25"></a-light>
+  <a-light type="point" position="15 5 0" intensity="1.2" color="#ff0044" distance="25"></a-light>
+
+  <a-entity id="player" position="0 1.6 8" wasd-collision>
+    <a-entity camera look-controls="pointerLockEnabled:true" raycaster="objects:.clickable; far:20">
+      <a-cursor color="#ff0044"></a-cursor>
+    </a-entity>
+  </a-entity>
+
+  <!-- SUELO -->
+  <a-plane rotation="-90 0 0" width="80" height="80" color="#000"></a-plane>
+  <a-plane rotation="-90 0 0" width="80" height="80" material="wireframe:true; color:#ff0044; emissive:#ff0044; emissiveIntensity:2.5;"></a-plane>
+  <!-- TECHO -->
+  <a-plane rotation="90 0 0" position="0 10 0" width="80" height="80" color="#000"></a-plane>
+  <a-plane rotation="90 0 0" position="0 10 0" width="80" height="80" material="wireframe:true; color:#ff0044; emissive:#ff0044; emissiveIntensity:1;"></a-plane>
+  <!-- TUBOS NEON -->
+  <a-cylinder position="-19.8 8 0" radius="0.06" height="60" rotation="90 0 0" material="color:#ff0044; emissive:#ff0044; emissiveIntensity:3;"></a-cylinder>
+  <a-cylinder position="19.8 8 0" radius="0.06" height="60" rotation="90 0 0" material="color:#ff0044; emissive:#ff0044; emissiveIntensity:3;"></a-cylinder>
+
+  <!-- TORUS RECOMPENSA -->
+  <a-torus id="torusGLB" position="0 3 -15" radius="2" radius-tubular="0.2"
+    material="wireframe:true; color:#333; emissive:#111; emissiveIntensity:1;"></a-torus>
+
+  <!-- TORUS SALIDA -->
+  <a-torus id="torusSalida" class="clickable" position="0 3 15" radius="2" radius-tubular="0.2"
+    material="wireframe:true; color:#ff0044; emissive:#ff0044; emissiveIntensity:2;"></a-torus>
+
+  <a-entity id="matrix-root"></a-entity>
+
+  <!-- ═══════════════════════════════════════════════
+       PANEL PRINCIPAL  (intro + quiz comparten espacio)
+  ═══════════════════════════════════════════════ -->
+  <a-entity id="panel" position="0 4 -10">
+
+    <!-- Fondo panel -->
+    <a-plane width="12" height="8" material="color:#020202; emissive:#ff0044; emissiveIntensity:0.25; opacity:0.88; transparent:true;"></a-plane>
+    <!-- Marco neon -->
+    <a-box position="0 4.05 0.02"  width="12.1" height="0.07" depth="0.04" material="color:#ff0044; emissive:#ff0044; emissiveIntensity:3;"></a-box>
+    <a-box position="0 -4.05 0.02" width="12.1" height="0.07" depth="0.04" material="color:#ff0044; emissive:#ff0044; emissiveIntensity:3;"></a-box>
+    <a-box position="-6.05 0 0.02" width="0.07" height="8.1" depth="0.04"  material="color:#ff0044; emissive:#ff0044; emissiveIntensity:3;"></a-box>
+    <a-box position="6.05 0 0.02"  width="0.07" height="8.1" depth="0.04"  material="color:#ff0044; emissive:#ff0044; emissiveIntensity:3;"></a-box>
+
+    <!-- ── INTRO (visible al entrar) ── -->
+    <a-entity id="introPanel">
+
+      <!-- Etiqueta sala -->
+      <a-text position="0 3.4 0.12" align="center" width="9" color="#ff0044"
+        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="32" value="SALA 04 // HARDWARE & MANTENIMIENTO"></a-text>
+
+      <!-- Separador top -->
+      <a-box position="0 2.9 0.02" width="9.5" height="0.04" depth="0.02"
+        material="color:#ff0044; emissive:#ff0044; emissiveIntensity:2; opacity:0.4; transparent:true;"></a-box>
+
+      <!-- Regla 1 -->
+      <a-text position="0 2.2 0.12" align="center" width="9.5" color="#ffffff"
+        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="34" value="RESPONDE 5 DE 8 PREGUNTAS CORRECTAMENTE"></a-text>
+
+      <!-- Regla 2 -->
+      <a-text position="0 1.1 0.12" align="center" width="9.5" color="#ffffff"
+        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="34" value="PARA DESBLOQUEAR EL OBJETO DE ESTA SALA"></a-text>
+
+      <!-- Separador mid -->
+      <a-box position="0 0.45 0.02" width="7" height="0.03" depth="0.02"
+        material="color:#ff0044; emissive:#ff0044; emissiveIntensity:1.5; opacity:0.25; transparent:true;"></a-box>
+
+      <!-- Regla 3 -->
+      <a-text position="0 -0.2 0.12" align="center" width="9" color="#ff0044"
+        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="34" value="⏱  15 SEGUNDOS POR PREGUNTA"></a-text>
+
+      <!-- Regla 4 -->
+      <a-text position="0 -1.1 0.12" align="center" width="9" color="#ff0044"
+        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="34" value="◈  3 OPCIONES — SOLO UNA CORRECTA"></a-text>
+
+      <!-- Regla 5 -->
+      <a-text position="0 -2.0 0.12" align="center" width="9" color="#ff0044"
+        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="34" value="⚠  SI FALLAS VUELVES AL LOBBY"></a-text>
+
+      <!-- Botón INICIAR -->
+      <a-entity position="0 -3.2 0.08">
+        <a-box id="btnIniciar" class="clickable" position="0 0 0.03" width="6" height="1.0" depth="0.05"
+          material="color:#050505; emissive:#ff0044; emissiveIntensity:1.2;"></a-box>
+        <a-text position="0 0 0.12" align="center" width="5.5" color="#ffffff"
+          font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="20" value="[ INICIAR SALA ]"></a-text>
+      </a-entity>
+
+    </a-entity>
+
+    <!-- ── QUIZ (oculto hasta pulsar INICIAR) ── -->
+    <a-entity id="quizPanel" visible="false">
+      <!-- Pregunta -->
+      <a-text id="qText" position="0 3.0 0.12" align="center" width="10.5" color="#ffffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="30" value="..."></a-text>
+      <a-text id="qGlow" position="0 3.0 0.09" align="center" width="11"   color="#ff0044"    font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="30" value="..." opacity="0.25"></a-text>
+
+      <!-- BOTON A -->
+      <a-box id="btnA" class="clickable" position="0 1.0 0.06" width="10" height="1.1" depth="0.05"
+        material="color:#0a000a; emissive:#ff0044; emissiveIntensity:0.6;">
+        <a-text id="lblA" position="0 0 0.06" align="center" width="9.5" color="#ffffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="38" value="..."></a-text>
+      </a-box>
+
+      <!-- BOTON B -->
+      <a-box id="btnB" class="clickable" position="0 -0.5 0.06" width="10" height="1.1" depth="0.05"
+        material="color:#0a000a; emissive:#ff0044; emissiveIntensity:0.6;">
+        <a-text id="lblB" position="0 0 0.06" align="center" width="9.5" color="#ffffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="38" value="..."></a-text>
+      </a-box>
+
+      <!-- BOTON C -->
+      <a-box id="btnC" class="clickable" position="0 -2.0 0.06" width="10" height="1.1" depth="0.05"
+        material="color:#0a000a; emissive:#ff0044; emissiveIntensity:0.6;">
+        <a-text id="lblC" position="0 0 0.06" align="center" width="9.5" color="#ffffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="38" value="..."></a-text>
+      </a-box>
+    </a-entity>
+
+  </a-entity>
+
+</a-scene>
+
+<script>
+  // ── PROGRESION ─────────────────────────────────────────────
+  const SALA_ID  = "sala4";
+  const SALA_REQ = "sala3";
+  const SALA_NEXT = "lobby.html";
+
+  if (SALA_REQ && sessionStorage.getItem(SALA_REQ+"_done") !== "true") {
+    document.addEventListener("DOMContentLoaded", () => {
+      const b = document.createElement("div");
+      b.style.cssText = "position:fixed;inset:0;z-index:999999;background:rgba(0,0,0,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Courier New',monospace;gap:16px;";
+      b.innerHTML = `<div style="font-size:11px;letter-spacing:.3em;color:#ff004499;border:1px solid #ff004444;padding:4px 14px">ACCESO DENEGADO</div>
+        <div style="font-size:34px;color:#ff0044;text-shadow:0 0 20px #ff0044;letter-spacing:.15em">SALA BLOQUEADA</div>
+        <div style="font-size:12px;color:#ffffff55;letter-spacing:.1em;text-align:center;max-width:340px;line-height:1.8">Completa y recoge el objeto<br>de la sala anterior primero.</div>
+        <button onclick="location.href='lobby.html'" style="margin-top:8px;padding:11px 40px;background:transparent;border:2px solid #ff0044;color:#ff0044;font-family:'Courier New',monospace;font-size:14px;letter-spacing:.2em;cursor:pointer;">[ VOLVER AL LOBBY ]</button>`;
+      document.body.appendChild(b);
+    });
+  }
+
+  function markSalaDone() { sessionStorage.setItem(SALA_ID+"_done","true"); }
+
+  // ── DATOS ──────────────────────────────────────────────────
+  const questions = [
+    {q:"Que tipo de memoria utiliza el procesador como primer nivel de cache?",a:"A) RAM DDR4",b:"B) Cache L1",c:"C) Memoria virtual",correct:"b"},
+    {q:"Que interfaz de disco ofrece mayor velocidad en la actualidad?",a:"A) SATA III",b:"B) IDE",c:"C) NVMe PCIe",correct:"c"},
+    {q:"Que es el POST en el arranque de un ordenador?",a:"A) Sistema operativo de arranque",b:"B) Autodiagnostico de hardware al encender",c:"C) Protocolo de red",correct:"b"},
+    {q:"En un RAID 1, que ocurre con los datos?",a:"A) Se distribuyen en varios discos",b:"B) Se duplican en dos discos (espejo)",c:"C) Se comprimen automaticamente",correct:"b"},
+    {q:"Que conector se usa para alimentar la placa base en ATX moderno?",a:"A) Conector 20 pines",b:"B) Conector 24 pines",c:"C) Conector SATA",correct:"b"},
+    {q:"Que herramienta software detecta errores en la memoria RAM?",a:"A) CrystalDiskInfo",b:"B) CPU-Z",c:"C) MemTest86",correct:"c"},
+    {q:"Que parametro del procesador indica cuantas tareas simultaneas puede ejecutar?",a:"A) Velocidad de bus",b:"B) Numero de hilos (threads)",c:"C) Tamano de cache L3",correct:"b"},
+    {q:"Que tipo de fallo ocurre cuando un sector del disco duro no puede leerse?",a:"A) Sector defectuoso (bad sector)",b:"B) Overclocking",c:"C) Buffer underrun",correct:"a"},
+  ];
+
+  // ════════════════════════════════════════════════════
+  // ▼▼▼  PON AQUI LA RUTA DE TU MODELO GLB  ▼▼▼
+  const GLB_SRC = "models/TU_MODELO_4.glb";
+  // ▲▲▲  PON AQUI LA RUTA DE TU MODELO GLB  ▲▲▲
+  // ════════════════════════════════════════════════════
+
+  const NC = "#ff0044";
+  const TIME = 15;
+  let current=0, correct=0, answering=false, timerInt=null, timeLeft=TIME, started=false;
+  const scene = document.querySelector("a-scene");
+  const torusGLB = document.getElementById("torusGLB");
+  const hudWrap = document.getElementById("hud-wrap");
+  const hudNum  = document.getElementById("hud-num");
+  const hudBar  = document.getElementById("hud-bar");
+  const hudProg = document.getElementById("hud-prog");
+
+  // ── INICIAR ────────────────────────────────────────────────
+  document.querySelector("a-scene").addEventListener("loaded", () => {
+    document.getElementById("btnIniciar").addEventListener("click", () => {
+      document.getElementById("introPanel").setAttribute("visible","false");
+      document.getElementById("quizPanel").setAttribute("visible","true");
+      hudWrap.style.display = "block";
+      hudProg.style.display = "block";
+      started = true;
+      loadQ();
+      startTimer();
+      spawnMatrix();
+    });
+
+    document.getElementById("torusSalida").addEventListener("click", () => {
+      location.href = "lobby.html";
+    });
+  });
+
+  // ── MATRIX ─────────────────────────────────────────────────
+  function spawnMatrix() {
+    const root = document.getElementById("matrix-root");
+    const sym = "01<>/{}[];:+=*#&%@?";
+    setInterval(() => {
+      const x=(Math.random()*50)-25, z=(Math.random()*-50)-5;
+      for(let i=0;i<28;i++) {
+        const ch=document.createElement("a-entity");
+        ch.setAttribute("text",{value:sym[Math.floor(Math.random()*sym.length)],color:NC,align:"center",width:3});
+        ch.setAttribute("position",`${x} ${26+i*1.4} ${z}`);
+        ch.setAttribute("animation",{property:"position",to:`${x} -16 ${z}`,dur:6000,easing:"linear"});
+        root.appendChild(ch);
+        setTimeout(()=>ch.remove(),6200);
+      }
+    },300);
+  }
+
+  // ── TIMER ──────────────────────────────────────────────────
+  function startTimer() {
+    clearInterval(timerInt); timeLeft=TIME; updateHUD();
+    timerInt = setInterval(()=>{ timeLeft--; updateHUD(); if(timeLeft<=0){clearInterval(timerInt);timeExpired();} },1000);
+  }
+  function updateHUD() {
+    hudNum.textContent = timeLeft;
+    hudBar.style.width = (timeLeft/TIME*100)+"%";
+    const col = timeLeft>8 ? NC : timeLeft>4 ? "#ffaa00" : "#ff2244";
+    hudBar.style.background = col;
+    hudNum.style.color = col;
+    hudNum.style.textShadow = `0 0 12px ${col}`;
+  }
+  function timeExpired() {
+    if(answering) return; answering=true;
+    particles("#ff2244", new THREE.Vector3(0,4,-10));
+    next();
+  }
+
+  // ── PREGUNTAS ──────────────────────────────────────────────
+  function loadQ() {
+    const q=questions[current];
+    ["qText","qGlow"].forEach(id=>document.getElementById(id).setAttribute("value",q.q));
+    document.getElementById("lblA").setAttribute("value",q.a);
+    document.getElementById("lblB").setAttribute("value",q.b);
+    document.getElementById("lblC").setAttribute("value",q.c);
+    hudProg.textContent = "✓ "+correct+" / "+questions.length;
+    resetBtns();
+  }
+  function resetBtns() {
+    ["btnA","btnB","btnC"].forEach(id=>
+      document.getElementById(id).setAttribute("material",`color:#0a000a; emissive:${NC}; emissiveIntensity:0.6;`));
+    hudNum.style.color=NC; hudNum.style.textShadow=`0 0 12px ${NC}`; hudBar.style.background=NC;
+  }
+
+  function answer(choice, btnId) {
+    if(answering||!started) return; answering=true; clearInterval(timerInt);
+    const btn=document.getElementById(btnId);
+    const ok = questions[current].correct===choice;
+    const pos=new THREE.Vector3(); btn.object3D.getWorldPosition(pos);
+    if(ok){ correct++; btn.setAttribute("material","color:#002200; emissive:#00ff44; emissiveIntensity:3;"); particles("#00ff44",pos); }
+    else { btn.setAttribute("material","color:#220000; emissive:#ff2244; emissiveIntensity:3;"); particles("#ff2244",pos); }
+    hudProg.textContent="✓ "+correct+" / "+questions.length;
+    setTimeout(()=>next(),900);
+  }
+  function next() {
+    current++;
+    if(current>=questions.length) { finishQuiz(); return; }
+    answering=false; loadQ(); startTimer();
+  }
+
+  // ── PARTICULAS ─────────────────────────────────────────────
+  function particles(col, wp) {
+    for(let i=0;i<22;i++) {
+      const p=document.createElement("a-sphere");
+      p.setAttribute("radius","0.05");
+      p.setAttribute("material",`color:${col};emissive:${col};emissiveIntensity:3;transparent:true;opacity:1;`);
+      p.setAttribute("position",`${wp.x} ${wp.y} ${wp.z}`);
+      const tx=wp.x+(Math.random()-.5)*5, ty=wp.y+Math.random()*3.5, tz=wp.z+(Math.random()-.5)*5;
+      p.setAttribute("animation__m",{property:"position",to:`${tx} ${ty} ${tz}`,dur:700,easing:"easeOutQuad"});
+      p.setAttribute("animation__f",{property:"material.opacity",to:0,dur:700,easing:"easeInQuad"});
+      scene.appendChild(p); setTimeout(()=>p.remove(),800);
+    }
+  }
+
+  // ── FIN QUIZ ───────────────────────────────────────────────
+  function finishQuiz() {
+    clearInterval(timerInt);
+    hudWrap.style.display="none"; hudProg.style.display="none";
+    document.getElementById("quizPanel").setAttribute("visible","false");
+    document.getElementById("panel").setAttribute("visible","false");
+
+    const passed = correct >= Math.ceil(questions.length * 0.6);
+
+    if(!passed) {
+      torusGLB.setAttribute("material","wireframe:true; color:#ff0000; emissive:#ff0000; emissiveIntensity:2;");
+      resultText("FALLO CRITICO","#ff2244","VUELVE AL LOBBY E INTENTALO DE NUEVO", 15);
+      addLight("#ff0000");
+      return;
+    }
+
+    torusGLB.setAttribute("material","wireframe:true; color:#00ff44; emissive:#00ff44; emissiveIntensity:2;");
+    resultText("ACCESO CONCEDIDO","#00ff44","RECOGE TU OBJETO Y AVANZA", -15);
+    addLight("#00ff44");
+    spawnPrompt();
+  }
+
+  function resultText(title, col, sub, z=- 15) {
+    const z1=z+0.1, z2=z;
+    [[title,"#fff","14",`0 9 ${z1}`],[title,col,"15",`0 9 ${z2}`],[sub,"#fff","10",`0 7.6 ${z1}`],[sub,col,"10.8",`0 7.6 ${z2}`]].forEach(([v,c,w,p])=>{
+      const t=document.createElement("a-text");
+      t.setAttribute("value",v); t.setAttribute("align","center");
+      t.setAttribute("color",c); t.setAttribute("width",w);
+      t.setAttribute("position",p); t.setAttribute("font","https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+      scene.appendChild(t);
+    });
+  }
+  function addLight(col) {
+    const l=document.createElement("a-light");
+    l.setAttribute("type","point"); l.setAttribute("color",col);
+    l.setAttribute("intensity","4"); l.setAttribute("distance","14");
+    l.setAttribute("position","0 8.5 -14");
+    scene.appendChild(l);
+  }
+
+  function spawnPrompt() {
+    const bg=document.createElement("a-plane");
+    bg.setAttribute("class","clickable"); bg.setAttribute("width","5"); bg.setAttribute("height","1.6");
+    bg.setAttribute("position","0 3 -15");
+    bg.setAttribute("material",`color:#000; emissive:${NC}; emissiveIntensity:1;`);
+    bg.setAttribute("animation__p",{property:"material.emissiveIntensity",from:0.5,to:3,dir:"alternate",loop:true,dur:800,easing:"easeInOutSine"});
+    const t=document.createElement("a-text");
+    t.setAttribute("value","> CLICK PARA RECOGER"); t.setAttribute("align","center");
+    t.setAttribute("color","#ffffff"); t.setAttribute("width","4.5");
+    t.setAttribute("position","0 3.05 -14.9"); t.setAttribute("font","https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+    scene.appendChild(bg); scene.appendChild(t);
+    bg.addEventListener("click",()=>{
+      spawnGLB(); markSalaDone();
+      bg.setAttribute("visible","false"); t.setAttribute("visible","false");
+      torusGLB.classList.remove("clickable");
+      torusGLB.setAttribute("material","wireframe:true; color:#0044ff; emissive:#0044ff; emissiveIntensity:1.5;");
+      const sal=document.getElementById("torusSalida");
+      sal.setAttribute("material",`wireframe:true; color:${NC}; emissive:${NC}; emissiveIntensity:3;`);
+      sal.setAttribute("animation",{property:"rotation",to:"0 360 0",loop:true,dur:3000,easing:"linear"});
+    },{once:true});
+  }
+
+  function spawnGLB() {
+    const m=document.createElement("a-entity");
+    m.setAttribute("gltf-model",GLB_SRC); m.setAttribute("position","0 3 -15");
+    m.setAttribute("scale","1 1 1");
+    m.setAttribute("animation","property:rotation; to:0 360 0; loop:true; dur:4000; easing:linear;");
+    scene.appendChild(m);
+  }
+
+  // A-Frame elements need to be clicked via the scene raycaster
+  // Wire up quiz buttons after scene loads
+  document.querySelector("a-scene").addEventListener("loaded", () => {
+    document.getElementById("btnA").addEventListener("click",()=>answer("a","btnA"));
+    document.getElementById("btnB").addEventListener("click",()=>answer("b","btnB"));
+    document.getElementById("btnC").addEventListener("click",()=>answer("c","btnC"));
+
+    // Hover highlight para respuesta inmediata
+    ["btnA","btnB","btnC"].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener("mouseenter", () => {
+        if (!answering) el.setAttribute("material", `color:#1a001a; emissive:#ff0044; emissiveIntensity:2;`);
+      });
+      el.addEventListener("mouseleave", () => {
+        if (!answering) el.setAttribute("material", `color:#0a000a; emissive:#ff0044; emissiveIntensity:0.6;`);
+      });
+    });
+  }, {once:false});
+</script>
+</body>
+</html>
