@@ -119,5 +119,5 @@ Los objetos recogidos en cada sala se guardan en la **hotbar** y persisten entre
 ---
 
 <div align="center">
-  <sub>Hecho con 💻 y mucho <code>#00ffff</code> — TehmKench and Navizu88</sub>
+  <sub>TehmKench and Navizu88</sub>
 </div>
