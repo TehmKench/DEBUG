@@ -118,20 +118,6 @@ Los objetos recogidos en cada sala se guardan en la **hotbar** y persisten entre
 
 ---
 
-## 📸 Capturas
-
-*(Añade aquí tus capturas de cada zona)*
-
-| Lobby | Sala 01 | Sala 02 |
-|---|---|---|
-| *(captura)* | *(captura)* | *(captura)* |
-
-| Sala 03 | Sala 04 | Boss Final |
-|---|---|---|
-| *(captura)* | *(captura)* | *(captura)* |
-
----
-
 <div align="center">
-  <sub>Hecho con 💻 y mucho <code>#00ffff</code> — TehmKench</sub>
+  <sub>Hecho con 💻 y mucho <code>#00ffff</code> — TehmKench and Navizu88</sub>
 </div>
