@@ -2,7 +2,7 @@
 
 # ⚡ DEBUG
 
-![Estado](https://img.shields.io/badge/estado-en%20finalizado-green?style=for-the-badge)
+![Estado](https://img.shields.io/badge/estado-%20finalizado-green?style=for-the-badge)
 ![Versión](https://img.shields.io/badge/versión-7.4.0-blue?style=for-the-badge)
 
 > Juego de quiz en primera persona con estética cyberpunk/neon. Pon a prueba tus conocimientos de informática, supera las salas y destruye el VOID CORE BOSS.
