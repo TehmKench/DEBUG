@@ -25,18 +25,18 @@ body { margin:0; overflow:hidden; cursor:none; }
   <!-- ===================== -->
   <!-- ASSETS -->
   <!-- ===================== -->
-
+  <a-asset-item id="neon-pillar" src="assets/blender_shape_keys_animation_test_3.glb"></a-asset-item>
   <a-assets>
     <a-asset-item id="grid" src="assets/90s_vaporwave_neon_grid_animated.glb"></a-asset-item>
     <audio id="music" src="assets/music.mp3" crossorigin="anonymous"></audio>
   </a-assets>
-
+  
   <!-- GRID -->
   <a-entity class="reactive" gltf-model="#grid" position="0 0 90"></a-entity>
   <a-entity class="reactive" gltf-model="#grid" position="-59 0 90"></a-entity>
   <a-entity class="reactive" gltf-model="#grid" position="59 0 90"></a-entity>
   <a-entity class="reactive" gltf-model="#grid" position="0 -22 330"></a-entity>
-
+  <a-entity gltf-model="#neon-pillar" scale="0.2 0.2 0.2" position="0 1 27"></a-entity>
   <!-- LUZ AMBIENTAL BASE -->
   <a-light type="ambient" intensity="1.2" color="#ff00ff"></a-light>
 
@@ -53,14 +53,15 @@ body { margin:0; overflow:hidden; cursor:none; }
   <a-box position="-20 5 0" width="0.5" height="10" depth="100" visible="false" wall></a-box>
   <a-box position="20 5 0" width="0.5" height="10" depth="100" visible="false" wall></a-box>
   <a-box position="0 5 -50" width="50" height="10" depth="0.5" visible="false" wall></a-box>
-  <a-box position="0 5 25" width="50" height="10" depth="0.5" visible="false" wall></a-box>
+  <a-box position="0 5 35" width="50" height="10" depth="0.5" visible="false" wall></a-box>
 
   <!-- PUERTAS -->
   <a-box id="puerta1" class="clickable" position="-6 2 10" width="3" height="4" depth="0.5"></a-box>
   <a-box id="puerta2" class="clickable" position="-6 2 -5" width="3" height="4" depth="0.5"></a-box>
   <a-box id="puerta3" class="clickable" position="6 2 10"  width="3" height="4" depth="0.5"></a-box>
   <a-box id="puerta4" class="clickable" position="6 2 -5"  width="3" height="4" depth="0.5"></a-box>
-  <a-box class="clickable" position="0 2 -20" width="4" height="5" depth="0.5" door="room:5"></a-box>
+  <a-box id="puerta5" class="clickable" position="0 2 25"  width="3" height="4" depth="0.5"></a-box>
+ 
 
   <!-- LABELS SALAS -->
   <a-text id="label1" position="-6 4.8 10.4"  align="center" width="4" color="#00ffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="SALA 01"></a-text>

@@ -180,7 +180,7 @@
 
   // ════════════════════════════════════════════════════
   // ▼▼▼  PON AQUI LA RUTA DE TU MODELO GLB  ▼▼▼
-  const GLB_SRC = "models/TU_MODELO_1.glb";
+  const GLB_SRC = "assets/final_key.glb";
   // ▲▲▲  PON AQUI LA RUTA DE TU MODELO GLB  ▲▲▲
   // ════════════════════════════════════════════════════
 
@@ -359,7 +359,7 @@
   function spawnGLB() {
     const m=document.createElement("a-entity");
     m.setAttribute("gltf-model",GLB_SRC); m.setAttribute("position","0 3 -15");
-    m.setAttribute("scale","1 1 1");
+    m.setAttribute("scale","0.5 0.5 0.5");
     m.setAttribute("animation","property:rotation; to:0 360 0; loop:true; dur:4000; easing:linear;");
     scene.appendChild(m);
   }

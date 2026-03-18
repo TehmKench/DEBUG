@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>DEBUG - FINAL BOSS HUNT</title>
+
+<script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-effects@master/dist/aframe-effects.min.js"></script>
+
+<style>
+body { margin:0; overflow:hidden; cursor:none; font-family: 'Courier New', monospace; }
+#ui {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  pointer-events: none; z-index: 1000;
+}
+#boss-health-container {
+  position: absolute; top: 30px; left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+}
+#boss-health-label {
+  color: #ff0044; font-size: 24px; text-align: center;
+  text-shadow: 0 0 20px #ff0044; margin-bottom: 10px;
+}
+#boss-health-bar {
+  width: 100%; height: 40px;
+  background: rgba(0,0,0,0.9);
+  border: 4px solid #ff0044;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 0 30px #ff0044;
+}
+#boss-health-fill {
+  height: 100%; width: 100%;
+  background: linear-gradient(90deg, #ff0044, #ff6600, #ffcc00);
+  transition: width 0.3s;
+}
+#player-health-container {
+  position: absolute; bottom: 40px; left: 40px;
+  width: 300px;
+}
+#player-health-label {
+  color: #00ffff; font-size: 20px; margin-bottom: 8px;
+  text-shadow: 0 0 15px #00ffff;
+}
+#player-health-bar {
+  width: 100%; height: 25px;
+  background: rgba(0,0,0,0.9);
+  border: 3px solid #00ffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 20px #00ffff;
+}
+#player-health-fill {
+  height: 100%; width: 100%;
+  background: linear-gradient(90deg, #00ffff, #00ff88);
+  transition: width 0.2s;
+}
+#radar {
+  position: absolute; bottom: 40px; right: 40px;
+  width: 200px; height: 200px;
+  background: rgba(0,0,0,0.85);
+  border: 4px solid #ff6600;
+  border-radius: 50%;
+  box-shadow: 0 0 25px #ff6600;
+}
+#radar-center {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px; height: 10px;
+  background: #00ffff;
+  border-radius: 50%;
+  box-shadow: 0 0 15px #00ffff;
+}
+.radar-orb {
+  position: absolute;
+  width: 12px; height: 12px;
+  background: #ffff00;
+  border-radius: 50%;
+  box-shadow: 0 0 15px #ffff00;
+  transform: translate(-50%, -50%);
+}
+#crosshair {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 20px; height: 20px;
+  border: 2px solid #00ffff;
+  border-radius: 50%;
+}
+#controls {
+  position: absolute; bottom: 10px; left: 50%;
+  transform: translateX(-50%);
+  color: #ffff00; font-size: 18px; text-align: center;
+  text-shadow: 0 0 15px #ffff00;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+#victory-screen, #gameover-screen {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.95);
+  display: none;
+  justify-content: center; align-items: center;
+  flex-direction: column;
+  z-index: 2000;
+}
+#victory-screen h1 {
+  color: #00ff88; font-size: 72px;
+  text-shadow: 0 0 60px #00ff88;
+}
+#gameover-screen h1 {
+  color: #ff0044; font-size: 72px;
+  text-shadow: 0 0 60px #ff0044;
+}
+#victory-screen p, #gameover-screen p {
+  color: #fff; font-size: 24px; margin-top: 30px;
+}
+#damage-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: radial-gradient(circle, transparent 40%, rgba(255,0,0,0.6) 100%);
+  opacity: 0; pointer-events: none; z-index: 999;
+}
+#orb-counter {
+  position: absolute; top: 100px; left: 50%;
+  transform: translateX(-50%);
+  color: #ffff00; font-size: 28px;
+  text-shadow: 0 0 20px #ffff00;
+}
+#phase-indicator {
+  position: absolute; top: 150px; left: 50%;
+  transform: translateX(-50%);
+  color: #ff0044; font-size: 20px;
+  text-shadow: 0 0 15px #ff0044;
+}
+#screen-shake {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 9999;
+}
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+@keyframes shake {
+  0%, 100% { transform: translate(0, 0); }
+  10%, 30%, 50%, 70%, 90% { transform: translate(-10px, -10px); }
+  20%, 40%, 60%, 80% { transform: translate(10px, 10px); }
+}
+#final-beam {
+  position: fixed;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 150px;
+  height: 0;
+  background: linear-gradient(to top, #ffff00, #ffffff, #87ceeb);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10000;
+  box-shadow: 0 0 100px #ffff00, 0 0 200px #ffffff;
+}
+#sky-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9998;
+  transition: background 3s, opacity 2s;
+}
+#invincibility-indicator {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #00ffff;
+  font-size: 32px;
+  text-shadow: 0 0 20px #00ffff;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1000;
+  animation: pulse 0.3s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+</style>
+</head>
+
+<body>
+
+<div id="screen-shake"></div>
+<div id="final-beam"></div>
+<div id="sky-overlay"></div>
+<div id="invincibility-indicator">⚡ INVENCIBLE ⚡</div>
+
+<div id="ui">
+  <div id="boss-health-container">
+    <div id="boss-health-label">VOID CORE BOSS</div>
+    <div id="boss-health-bar"><div id="boss-health-fill"></div></div>
+  </div>
+  <div id="orb-counter">ORBS: 0/3</div>
+  <div id="phase-indicator">FASE 1</div>
+  <div id="player-health-container">
+    <div id="player-health-label">HEALTH</div>
+    <div id="player-health-bar"><div id="player-health-fill"></div></div>
+  </div>
+  <div id="radar">
+    <div id="radar-center"></div>
+  </div>
+  <div id="crosshair"></div>
+  <div id="controls">RECOLECTA LOS 3 ORBES</div>
+</div>
+
+<div id="damage-overlay"></div>
+
+<div id="victory-screen">
+  <h1>⚡ CORE DESTROYED ⚡</h1>
+  <p>El vacío ha sido conquistado</p>
+</div>
+
+<div id="gameover-screen">
+  <h1>💀 ELIMINATED 💀</h1>
+  <p>Regresando al lobby...</p>
+</div>
+
+<a-scene id="scene"
+         background="color:#000000"
+         fog="type: exponential; color: #000000; density: 0.001"
+         effects="bloom:true; bloomStrength:3; bloomRadius:1.5; bloomThreshold:0.1"
+         renderer="antialias: true; colorManagement: true;">
+
+  <a-assets>
+    <a-asset-item id="coreModel" src="assets/boss_core.glb"></a-asset-item>
+    <audio id="music" src="assets/music.mp3" crossorigin="anonymous"></audio>
+  </a-assets>
+
+  <!-- TERRENO -->
+  <a-entity id="terrain"></a-entity>
+
+  <!-- BOSS CORE -->
+  <a-entity id="boss" position="0 30 0">
+    <a-entity id="boss-model" gltf-model="#coreModel" scale="30 30 30"></a-entity>
+    <a-light type="point" intensity="15" color="#ff0044" distance="300"></a-light>
+  </a-entity>
+
+  <!-- JUGADOR -->
+  <a-entity id="player" position="0 5 900">
+    <a-entity id="camera" camera="fov: 100" look-controls="pointerLockEnabled: true"></a-entity>
+  </a-entity>
+
+  <!-- ORBES -->
+  <a-entity id="orbs-container"></a-entity>
+
+  <!-- RAYOS -->
+  <a-entity id="lightning-container"></a-entity>
+
+  <!-- LUCES -->
+  <a-light type="ambient" intensity="0.2" color="#0a0000"></a-light>
+  <a-light type="point" position="0 100 0" intensity="1" color="#ff0044" distance="200"></a-light>
+
+</a-scene>
+
+<script>
+/* ============================================ */
+/* CONFIGURACIÓN                                */
+/* ============================================ */
+
+const CHUNK_SIZE = 200;
+const SEGMENTS = 12;
+const DUNE_HEIGHT = 25;
+const RENDER_DISTANCE = 4;
+const MAP_SIZE = 2000;
+
+const terrainEl = document.getElementById('terrain');
+const playerEl = document.getElementById('player');
+const cameraEl = document.getElementById('camera');
+const sceneEl = document.getElementById('scene');
+const bossEl = document.getElementById('boss');
+const orbsContainer = document.getElementById('orbs-container');
+const screenShakeEl = document.getElementById('screen-shake');
+const finalBeamEl = document.getElementById('final-beam');
+const skyOverlayEl = document.getElementById('sky-overlay');
+const invincibilityEl = document.getElementById('invincibility-indicator');
+const lightningContainer = document.getElementById('lightning-container');
+
+const playerObj = playerEl.object3D;
+const cameraObj = cameraEl.object3D;
+const bossObj = bossEl.object3D;
+
+// Estado
+let playerHealth = 100;
+let bossHealth = 100;
+let orbsCollected = 0;
+let gameActive = true;
+let bossPhase = 1;
+
+// Jugador
+let playerVel = new THREE.Vector3(0, 0, 0);
+let onGround = false;
+let canDash = true;
+let isInvincible = false;
+let invincibilityEndTime = 0;
+
+// Controles
+const keys = {};
+
+// Orbes
+let orbs = [];
+
+// Proyectiles
+let projectiles = [];
+
+// Rotación de disparos circulares
+let circularFireRotation = 0;
+
+// Terreno
+let chunks = {};
+let lastChunkX = 0;
+let lastChunkZ = 0;
+let chunkQueue = [];
+let isGeneratingChunks = false;
+
+/* ============================================ */
+/* INMORTALIDAD AL INICIAR (1.5 SEGUNDOS)       */
+/* ============================================ */
+
+function activateInvincibility() {
+  isInvincible = true;
+  invincibilityEndTime = Date.now() + 1500; // ⚠️ 1.5 SEGUNDOS
+  invincibilityEl.style.opacity = '1';
+  
+  const checkInterval = setInterval(() => {
+    if(Date.now() > invincibilityEndTime) {
+      isInvincible = false;
+      invincibilityEl.style.opacity = '0';
+      clearInterval(checkInterval);
+    }
+  }, 100);
+}
+
+/* ============================================ */
+/* TERRENO                                      */
+/* ============================================ */
+
+function noise(x, z) {
+  const n1 = Math.sin(x * 0.02) * Math.cos(z * 0.02) * 0.5;
+  const n2 = Math.sin(x * 0.05 + 1.5) * Math.cos(z * 0.04 + 1.5) * 0.3;
+  return (n1 + n2) * DUNE_HEIGHT;
+}
+
+function createChunk(cx, cz) {
+  const key = `${cx},${cz}`;
+  if(chunks[key]) return;
+
+  const chunk = document.createElement('a-entity');
+  chunk.setAttribute('position', `${cx * CHUNK_SIZE} 0 ${cz * CHUNK_SIZE}`);
+
+  for(let i = 0; i <= SEGMENTS; i++) {
+    const points = [];
+    for(let j = 0; j <= SEGMENTS; j++) {
+      const x = (j / SEGMENTS - 0.5) * CHUNK_SIZE;
+      const z = (i / SEGMENTS - 0.5) * CHUNK_SIZE;
+      const y = noise(cx * CHUNK_SIZE + x, cz * CHUNK_SIZE + z);
+      points.push(`${x} ${y} ${z}`);
+    }
+    const line = document.createElement('a-entity');
+    line.setAttribute('line', { color: '#ff0044', opacity: 0.8, width: 3, path: points.join(' ') });
+    chunk.appendChild(line);
+  }
+
+  for(let j = 0; j <= SEGMENTS; j++) {
+    const points = [];
+    for(let i = 0; i <= SEGMENTS; i++) {
+      const x = (j / SEGMENTS - 0.5) * CHUNK_SIZE;
+      const z = (i / SEGMENTS - 0.5) * CHUNK_SIZE;
+      const y = noise(cx * CHUNK_SIZE + x, cz * CHUNK_SIZE + z);
+      points.push(`${x} ${y} ${z}`);
+    }
+    const line = document.createElement('a-entity');
+    line.setAttribute('line', { color: '#ff3366', opacity: 0.8, width: 3, path: points.join(' ') });
+    chunk.appendChild(line);
+  }
+
+  for(let i = 0; i <= SEGMENTS; i += 4) {
+    for(let j = 0; j <= SEGMENTS; j += 4) {
+      const x = (j / SEGMENTS - 0.5) * CHUNK_SIZE;
+      const z = (i / SEGMENTS - 0.5) * CHUNK_SIZE;
+      const y = noise(cx * CHUNK_SIZE + x, cz * CHUNK_SIZE + z);
+      const vertex = document.createElement('a-sphere');
+      vertex.setAttribute('position', `${x} ${y + 0.5} ${z}`);
+      vertex.setAttribute('radius', '0.8');
+      vertex.setAttribute('color', '#ff0044');
+      vertex.setAttribute('emissive', '#ff0044');
+      vertex.setAttribute('emissive-intensity', '3');
+      chunk.appendChild(vertex);
+    }
+  }
+
+  terrainEl.appendChild(chunk);
+  chunks[key] = chunk;
+}
+
+function processChunkQueue() {
+  if(chunkQueue.length === 0) { isGeneratingChunks = false; return; }
+  const toProcess = chunkQueue.splice(0, 2);
+  toProcess.forEach(({cx, cz}) => createChunk(cx, cz));
+  isGeneratingChunks = true;
+  requestAnimationFrame(processChunkQueue);
+}
+
+function updateTerrain() {
+  const px = playerObj.position.x;
+  const pz = playerObj.position.z;
+  const cx = Math.round(px / CHUNK_SIZE);
+  const cz = Math.round(pz / CHUNK_SIZE);
+
+  if(cx === lastChunkX && cz === lastChunkZ) return;
+  lastChunkX = cx;
+  lastChunkZ = cz;
+
+  for(const key in chunks) {
+    const [kx, kz] = key.split(',').map(Number);
+    const dist = Math.sqrt((kx - cx) ** 2 + (kz - cz) ** 2);
+    if(dist > RENDER_DISTANCE + 1) {
+      chunks[key].remove();
+      delete chunks[key];
+    }
+  }
+
+  for(let dx = -RENDER_DISTANCE; dx <= RENDER_DISTANCE; dx++) {
+    for(let dz = -RENDER_DISTANCE; dz <= RENDER_DISTANCE; dz++) {
+      const key = `${cx + dx},${cz + dz}`;
+      if(!chunks[key]) chunkQueue.push({cx: cx + dx, cz: cz + dz});
+    }
+  }
+
+  if(!isGeneratingChunks && chunkQueue.length > 0) processChunkQueue();
+}
+
+/* ============================================ */
+/* ORBES                                        */
+/* ============================================ */
+
+function spawnOrbs() {
+  orbs = [];
+  const positions = [
+    {x: 800, z: 800},
+    {x: -800, z: 800},
+    {x: 0, z: -850}
+  ];
+
+  positions.forEach((pos, index) => {
+    const orb = document.createElement('a-entity');
+    orb.setAttribute('position', `${pos.x} 5 ${pos.z}`);
+    
+    const sphere = document.createElement('a-sphere');
+    sphere.setAttribute('radius', '6');
+    sphere.setAttribute('color', '#ffff00');
+    sphere.setAttribute('emissive', '#ffff00');
+    sphere.setAttribute('emissive-intensity', '5');
+    sphere.setAttribute('animation', 'property: scale; to: 1.2 1.2 1.2; dur: 800; loop: true; dir: alternate');
+    orb.appendChild(sphere);
+
+    const ring = document.createElement('a-torus');
+    ring.setAttribute('radius', '8');
+    ring.setAttribute('radius-tubular', '0.6');
+    ring.setAttribute('color', '#ffffff');
+    ring.setAttribute('emissive', '#ffffff');
+    ring.setAttribute('emissive-intensity', '3');
+    ring.setAttribute('rotation', '90 0 0');
+    ring.setAttribute('animation', 'property: rotation; to: 90 360 0; dur: 5000; loop: true; easing: linear');
+    orb.appendChild(ring);
+
+    const light = document.createElement('a-light');
+    light.setAttribute('type', 'point');
+    light.setAttribute('intensity', '4');
+    light.setAttribute('color', '#ffff00');
+    light.setAttribute('distance', '70');
+    orb.appendChild(light);
+
+    orbsContainer.appendChild(orb);
+    orbs.push({ el: orb, x: pos.x, y: 5, z: pos.z, collected: false, index: index });
+  });
+}
+
+function updateRadar() {
+  const radar = document.getElementById('radar');
+  const radarSize = 200;
+  const radarRange = MAP_SIZE / 2;
+  radar.querySelectorAll('.radar-orb').forEach(el => el.remove());
+  const playerPos = playerObj.position;
+
+  orbs.forEach(orb => {
+    if(orb.collected) return;
+    const dx = orb.x - playerPos.x;
+    const dz = orb.z - playerPos.z;
+    const radarX = (dx / radarRange) * (radarSize / 2) + radarSize / 2;
+    const radarY = (dz / radarRange) * (radarSize / 2) + radarSize / 2;
+    const dot = document.createElement('div');
+    dot.className = 'radar-orb';
+    dot.style.left = radarX + 'px';
+    dot.style.top = radarY + 'px';
+    radar.appendChild(dot);
+  });
+}
+
+/* ============================================ */
+/* AUDIO                                        */
+/* ============================================ */
+
+function initAudio() {
+  const audio = document.getElementById('music');
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  const audioCtx = new AudioContext();
+  const analyser = audioCtx.createAnalyser();
+  const source = audioCtx.createMediaElementSource(audio);
+  source.connect(analyser);
+  analyser.connect(audioCtx.destination);
+  window.addEventListener('click', () => { audioCtx.resume(); audio.play(); audio.loop = true; }, { once: true });
+}
+
+/* ============================================ */
+/* CONTROLES                                    */
+/* ============================================ */
+
+window.addEventListener('keydown', e => {
+  keys[e.code] = true;
+  if(e.code === 'Space' && onGround) { playerVel.y = 1.5; onGround = false; }
+  if(e.code === 'ShiftLeft' && canDash) {
+    canDash = false;
+    const dir = new THREE.Vector3();
+    cameraObj.getWorldDirection(dir);
+    dir.y = 0; dir.normalize(); dir.negate();
+    playerVel.add(dir.multiplyScalar(3));
+    setTimeout(() => canDash = true, 600);
+  }
+});
+
+window.addEventListener('keyup', e => { keys[e.code] = false; });
+
+/* ============================================ */
+/* MOVIMIENTO                                   */
+/* ============================================ */
+
+function updatePlayer() {
+  if(!cameraObj || !gameActive) return;
+
+  const camDir = new THREE.Vector3();
+  cameraObj.getWorldDirection(camDir);
+  camDir.y = 0; camDir.normalize(); camDir.negate();
+
+  const camRight = new THREE.Vector3();
+  camRight.crossVectors(camDir, new THREE.Vector3(0, 1, 0));
+  camRight.normalize();
+
+  const inputDir = new THREE.Vector3(0, 0, 0);
+  if(keys['KeyW']) inputDir.add(camDir);
+  if(keys['KeyS']) inputDir.sub(camDir);
+  if(keys['KeyD']) inputDir.add(camRight);
+  if(keys['KeyA']) inputDir.sub(camRight);
+
+  const speed = 2.5;
+  if(inputDir.length() > 0) {
+    inputDir.normalize();
+    playerVel.x = inputDir.x * speed;
+    playerVel.z = inputDir.z * speed;
+  } else {
+    playerVel.x *= 0.9;
+    playerVel.z *= 0.9;
+  }
+
+  if(!onGround) playerVel.y -= 0.05;
+
+  const pos = playerObj.position.clone();
+  pos.x += playerVel.x;
+  pos.z += playerVel.z;
+  pos.y += playerVel.y;
+
+  const terrainH = noise(pos.x, pos.z);
+  if(pos.y < terrainH + 4) {
+    pos.y = terrainH + 4;
+    playerVel.y = 0;
+    onGround = true;
+  }
+
+  const limit = MAP_SIZE / 2 - 20;
+  pos.x = Math.max(-limit, Math.min(limit, pos.x));
+  pos.z = Math.max(-limit, Math.min(limit, pos.z));
+
+  playerObj.position.copy(pos);
+}
+
+/* ============================================ */
+/* BOSS                                         */
+/* ============================================ */
+
+let lastShotTime = 0;
+let shotInterval = 800;
+
+function updateBoss() {
+  if(!gameActive) return;
+
+  const bossPos = bossObj.position.clone();
+  const playerPos = playerObj.position.clone();
+  const direction = new THREE.Vector3();
+  direction.subVectors(playerPos, bossPos);
+  const angle = Math.atan2(direction.x, direction.z);
+  bossObj.rotation.y = angle - Math.PI / 2;
+
+  if(bossHealth <= 67 && bossPhase === 1) {
+    bossPhase = 2; shotInterval = 500;
+    document.getElementById('phase-indicator').textContent = 'FASE 2';
+  }
+  if(bossHealth <= 34 && bossPhase === 2) {
+    bossPhase = 3; shotInterval = 250;
+    document.getElementById('phase-indicator').textContent = 'FASE 3 - DESTRUCCIÓN';
+  }
+
+  if(bossPhase <= 2) {
+    const now = Date.now();
+    if(now - lastShotTime > shotInterval) {
+      fireProjectile(0);
+      fireProjectile(-0.3);
+      fireProjectile(0.3);
+      if(bossPhase === 2) { fireProjectile(-0.5); fireProjectile(0.5); }
+      lastShotTime = now;
+    }
+  }
+
+  // FASE 3: RAYOS + PROYECTILES EN CÍRCULO ROTATORIO
+  if(bossPhase === 3) {
+    const now = Date.now();
+    if(now - lastShotTime > shotInterval) {
+      // Rayo
+      if(Math.random() < 0.5) fireLightning();
+      
+      // ⚠️ Proyectiles en círculo que ROTAN cada volley
+      circularFireRotation += 0.4; // ⚠️ Rotación más pronunciada
+      for(let i = 0; i < 12; i++) { // ⚠️ 12 proyectiles (más denso)
+        const angle = (i / 12) * Math.PI * 2 + circularFireRotation;
+        fireProjectileCircular(angle);
+      }
+      lastShotTime = now;
+    }
+  }
+}
+
+/* ============================================ */
+/* PROYECTILES (3000 unidades - LLEGAN LEJOS)   */
+/* ============================================ */
+
+function fireProjectile(offsetX = 0) {
+  const projectile = document.createElement('a-sphere');
+  projectile.setAttribute('radius', '2');
+  projectile.setAttribute('color', '#ff0044');
+  projectile.setAttribute('emissive', '#ff0044');
+  projectile.setAttribute('emissive-intensity', '5');
+  projectile.setAttribute('position', `${bossObj.position.x} 5 ${bossObj.position.z}`);
+  sceneEl.appendChild(projectile);
+
+  const dir = new THREE.Vector3();
+  dir.subVectors(playerObj.position, bossObj.position).normalize();
+  dir.y = 0;
+  dir.x += offsetX;
+  dir.normalize();
+
+  const projectileData = {
+    el: projectile,
+    pos: projectile.object3D.position.clone(),
+    dir: dir,
+    speed: 5, // ⚠️ MÁS RÁPIDOS
+    active: true,
+    maxDist: 3000 // ⚠️ 3000 unidades (llega a los orbes)
+  };
+  projectiles.push(projectileData);
+}
+
+function fireProjectileCircular(angle) {
+  const projectile = document.createElement('a-sphere');
+  projectile.setAttribute('radius', '2');
+  projectile.setAttribute('color', '#ff0044');
+  projectile.setAttribute('emissive', '#ff0044');
+  projectile.setAttribute('emissive-intensity', '5');
+  projectile.setAttribute('position', `${bossObj.position.x} 5 ${bossObj.position.z}`);
+  sceneEl.appendChild(projectile);
+
+  const dir = new THREE.Vector3(Math.sin(angle), 0, Math.cos(angle));
+
+  const projectileData = {
+    el: projectile,
+    pos: projectile.object3D.position.clone(),
+    dir: dir,
+    speed: 4,
+    active: true,
+    maxDist: 3000 // ⚠️ 3000 unidades
+  };
+  projectiles.push(projectileData);
+}
+
+function updateProjectiles() {
+  for(let i = projectiles.length - 1; i >= 0; i--) {
+    const p = projectiles[i];
+    if(!p.active) continue;
+
+    p.pos.add(p.dir.clone().multiplyScalar(p.speed));
+    p.el.object3D.position.copy(p.pos);
+
+    const dx = p.pos.x - playerObj.position.x;
+    const dz = p.pos.z - playerObj.position.z;
+    const distXZ = Math.sqrt(dx*dx + dz*dz);
+    
+    // ⚠️ SOLO DAÑA SI NO ES INVENCIBLE
+    if(distXZ < 5 && !isInvincible) {
+      damagePlayer(15);
+      p.el.remove();
+      p.active = false;
+      projectiles.splice(i, 1);
+      continue;
+    }
+
+    if(p.pos.length() > p.maxDist) {
+      p.el.remove();
+      p.active = false;
+      projectiles.splice(i, 1);
+    }
+  }
+}
+
+/* ============================================ */
+/* RAYOS (3000 unidades - LLEGAN LEJOS)         */
+/* ============================================ */
+
+function fireLightning() {
+  const bossPos = bossObj.position.clone();
+  const playerPos = playerObj.position.clone();
+  
+  const startPos = new THREE.Vector3(bossPos.x, 5, bossPos.z);
+  
+  const dir = new THREE.Vector3();
+  dir.subVectors(playerPos, startPos).normalize();
+  dir.x += (Math.random() - 0.5) * 0.3;
+  dir.z += (Math.random() - 0.5) * 0.3;
+  dir.normalize();
+
+  const endPoint = startPos.clone().add(dir.clone().multiplyScalar(3000)); // ⚠️ 3000 unidades
+  
+  createWarningLine3D(startPos, endPoint, dir);
+
+  setTimeout(() => {
+    if(!gameActive) return;
+    createLightningBeam(startPos, endPoint, dir);
+  }, 2000);
+}
+
+function createWarningLine3D(start, end, dir) {
+  const warning = document.createElement('a-cylinder');
+  warning.setAttribute('position', `${start.x} ${start.y} ${start.z}`);
+  warning.setAttribute('radius', '4');
+  warning.setAttribute('height', '3000'); // ⚠️ 3000 unidades
+  warning.setAttribute('color', '#ff0000');
+  warning.setAttribute('opacity', '0.5');
+  warning.setAttribute('transparent', 'true');
+  warning.setAttribute('emissive', '#ff0000');
+  warning.setAttribute('emissive-intensity', '3');
+  const angleY = Math.atan2(dir.x, dir.z);
+  warning.setAttribute('rotation', `90 ${angleY * 180 / Math.PI} 0`);
+  warning.setAttribute('animation', 'property: opacity; from: 0.3; to: 0.8; dur: 150; loop: true; dir: alternate');
+  lightningContainer.appendChild(warning);
+  setTimeout(() => warning.remove(), 2100);
+}
+
+function createLightningBeam(start, end, dir) {
+  const beam = document.createElement('a-cylinder');
+  beam.setAttribute('position', `${start.x} ${start.y} ${start.z}`);
+  beam.setAttribute('radius', '8');
+  beam.setAttribute('height', '3000'); // ⚠️ 3000 unidades
+  beam.setAttribute('color', '#ff0044');
+  beam.setAttribute('emissive', '#ff0044');
+  beam.setAttribute('emissive-intensity', '20');
+  const angleY = Math.atan2(dir.x, dir.z);
+  beam.setAttribute('rotation', `90 ${angleY * 180 / Math.PI} 0`);
+  lightningContainer.appendChild(beam);
+
+  const playerPos = playerObj.position.clone();
+  const distToLine = distanceToLineXZ(playerPos, start, end);
+  
+  // ⚠️ SOLO DAÑA SI NO ES INVENCIBLE
+  if(distToLine < 10 && !isInvincible) damagePlayer(40);
+
+  setTimeout(() => beam.remove(), 1500);
+}
+
+function distanceToLineXZ(point, lineStart, lineEnd) {
+  const lineDir = new THREE.Vector3();
+  lineDir.subVectors(lineEnd, lineStart);
+  lineDir.y = 0;
+  lineDir.normalize();
+  
+  const pointDir = new THREE.Vector3();
+  pointDir.subVectors(point, lineStart);
+  pointDir.y = 0;
+  
+  const projection = pointDir.dot(lineDir);
+  const closestPoint = lineStart.clone().add(lineDir.multiplyScalar(projection));
+  closestPoint.y = point.y;
+  
+  return point.distanceTo(closestPoint);
+}
+
+/* ============================================ */
+/* ORBES                                        */
+/* ============================================ */
+
+function updateOrbs() {
+  if(!gameActive) return;
+  const playerPos = playerObj.position;
+
+  orbs.forEach(orb => {
+    if(orb.collected) return;
+
+    const dx = playerPos.x - orb.x;
+    const dz = playerPos.z - orb.z;
+    const distXZ = Math.sqrt(dx*dx + dz*dz);
+
+    if(distXZ < 15) {
+      orb.collected = true;
+      orb.el.setAttribute('visible', 'false');
+      orbsCollected++;
+
+      const isLastOrb = orbsCollected >= 3;
+      sendOrbToBoss(orb.x, orb.y, orb.z, isLastOrb);
+      damageBoss(33.33);
+
+      document.getElementById('orb-counter').textContent = `ORBS: ${orbsCollected}/3`;
+      triggerScreenShake();
+    }
+  });
+}
+
+function sendOrbToBoss(orbX, orbY, orbZ, isLastOrb) {
+  const orbProjectile = document.createElement('a-sphere');
+  orbProjectile.setAttribute('radius', '5');
+  orbProjectile.setAttribute('color', '#ffff00');
+  orbProjectile.setAttribute('emissive', '#ffff00');
+  orbProjectile.setAttribute('emissive-intensity', '6');
+  orbProjectile.setAttribute('position', `${orbX} ${orbY} ${orbZ}`);
+  sceneEl.appendChild(orbProjectile);
+
+  const bossPos = bossObj.position.clone();
+  const dir = new THREE.Vector3();
+  dir.subVectors(bossPos, orbProjectile.object3D.position).normalize();
+
+  let pos = orbProjectile.object3D.position.clone();
+  const speed = 6;
+
+  const moveInterval = setInterval(() => {
+    if(!gameActive) { orbProjectile.remove(); clearInterval(moveInterval); return; }
+    pos.add(dir.clone().multiplyScalar(speed));
+    orbProjectile.object3D.position.copy(pos);
+    const dist = pos.distanceTo(bossPos);
+    if(dist < 30) {
+      createOrbExplosion(pos.clone(), isLastOrb);
+      orbProjectile.remove();
+      clearInterval(moveInterval);
+    }
+  }, 16);
+}
+
+function createOrbExplosion(pos, isLastOrb) {
+  const particleCount = isLastOrb ? 200 : 80;
+  const particleSize = isLastOrb ? 4 : 2;
+
+  for(let i = 0; i < particleCount; i++) {
+    const particle = document.createElement('a-sphere');
+    particle.setAttribute('radius', Math.random() * particleSize + 1);
+    particle.setAttribute('color', ['#ffff00', '#ff6600', '#ffffff', '#ff0044'][Math.floor(Math.random() * 4)]);
+    particle.setAttribute('emissive', particle.getAttribute('color'));
+    particle.setAttribute('emissive-intensity', '5');
+    particle.setAttribute('position', pos);
+    sceneEl.appendChild(particle);
+
+    const vel = new THREE.Vector3(
+      (Math.random() - 0.5) * (isLastOrb ? 15 : 8),
+      (Math.random() - 0.5) * (isLastOrb ? 15 : 8),
+      (Math.random() - 0.5) * (isLastOrb ? 15 : 8)
+    );
+
+    let p = particle.object3D.position.clone();
+    const interval = setInterval(() => { p.add(vel); particle.object3D.position.copy(p); }, 16);
+    setTimeout(() => { particle.remove(); clearInterval(interval); }, isLastOrb ? 6000 : 4000);
+  }
+
+  const shockwave = document.createElement('a-ring');
+  shockwave.setAttribute('position', pos);
+  shockwave.setAttribute('radius-inner', '5');
+  shockwave.setAttribute('radius-outer', '10');
+  shockwave.setAttribute('color', '#ffff00');
+  shockwave.setAttribute('emissive', '#ffff00');
+  shockwave.setAttribute('emissive-intensity', '8');
+  sceneEl.appendChild(shockwave);
+
+  let r = 5;
+  const expand = setInterval(() => {
+    r += isLastOrb ? 8 : 4;
+    shockwave.setAttribute('radius-inner', r);
+    shockwave.setAttribute('radius-outer', r + 5);
+    shockwave.setAttribute('opacity', 1 - r / (isLastOrb ? 200 : 100));
+  }, 16);
+  setTimeout(() => { shockwave.remove(); clearInterval(expand); }, isLastOrb ? 5000 : 2500);
+
+  if(isLastOrb) setTimeout(() => triggerFinalExplosion(), 2000);
+}
+
+function triggerScreenShake() {
+  screenShakeEl.classList.add('shake');
+  setTimeout(() => screenShakeEl.classList.remove('shake'), 500);
+}
+
+/* ============================================ */
+/* FINAL - CIELO AZUL → finale.html             */
+/* ============================================ */
+
+function triggerFinalExplosion() {
+  gameActive = false;
+
+  const bossPos = bossObj.position.clone();
+
+  // FASE 1: EXPLOSIÓN DE PARTÍCULAS (0-2s)
+  for(let i = 0; i < 800; i++) {
+    const particle = document.createElement('a-sphere');
+    particle.setAttribute('radius', Math.random() * 4 + 1);
+    particle.setAttribute('color', ['#ff0044', '#ff6600', '#ffff00', '#00ffff', '#ffffff'][Math.floor(Math.random() * 5)]);
+    particle.setAttribute('emissive', particle.getAttribute('color'));
+    particle.setAttribute('emissive-intensity', '8');
+    particle.setAttribute('position', bossPos);
+    sceneEl.appendChild(particle);
+
+    const vel = new THREE.Vector3(
+      (Math.random() - 0.5) * 25,
+      (Math.random() - 0.5) * 25 + 10,
+      (Math.random() - 0.5) * 25
+    );
+
+    let p = particle.object3D.position.clone();
+    const interval = setInterval(() => {
+      p.add(vel);
+      particle.object3D.position.copy(p);
+    }, 16);
+
+    setTimeout(() => { particle.remove(); clearInterval(interval); }, 5000);
+  }
+
+  // FASE 2: RAYO AMARILLO (1-3s)
+  setTimeout(() => {
+    finalBeamEl.style.opacity = '1';
+    finalBeamEl.style.transition = 'height 2s ease-out, opacity 0.5s';
+    finalBeamEl.style.height = '100%';
+  }, 500);
+
+  // ⚠️ FASE 3: CIELO AZUL (3-5s)
+  setTimeout(() => {
+    skyOverlayEl.style.background = 'linear-gradient(to bottom, #87ceeb, #ffffff)';
+    skyOverlayEl.style.opacity = '1';
+  }, 3000);
+
+  // ⚠️ REDIRIGIR DESDE CIELO AZUL (5s) - SIN FLASH BLANCO
+  setTimeout(() => {
+    window.location.href = 'finale.html';
+  }, 5000);
+
+  bossEl.setAttribute('visible', 'false');
+}
+
+/* ============================================ */
+/* DAÑO                                         */
+/* ============================================ */
+
+function damageBoss(amount) {
+  bossHealth -= amount;
+  if(bossHealth < 0) bossHealth = 0;
+  document.getElementById('boss-health-fill').style.width = `${bossHealth}%`;
+  bossEl.setAttribute('emissive-intensity', '15');
+  setTimeout(() => bossEl.setAttribute('emissive-intensity', '8'), 300);
+  if(bossHealth <= 0) victory();
+}
+
+function damagePlayer(amount) {
+  // ⚠️ NO DAÑAR SI ES INVENCIBLE
+  if(isInvincible) return;
+  
+  playerHealth -= amount;
+  if(playerHealth < 0) playerHealth = 0;
+  document.getElementById('player-health-fill').style.width = `${playerHealth}%`;
+  const overlay = document.getElementById('damage-overlay');
+  overlay.style.opacity = '0.8';
+  setTimeout(() => overlay.style.opacity = '0', 200);
+  if(playerHealth <= 0) gameOver();
+}
+
+function victory() {
+  gameActive = false;
+  document.getElementById('victory-screen').style.display = 'flex';
+  setTimeout(() => { window.location.href = 'finale.html'; }, 8000);
+}
+
+function gameOver() {
+  gameActive = false;
+  document.getElementById('gameover-screen').style.display = 'flex';
+  setTimeout(() => { window.location.href = 'lobby.html'; }, 7000);
+}
+
+/* ============================================ */
+/* GAME LOOP                                    */
+/* ============================================ */
+
+let frameCount = 0;
+function gameLoop() {
+  frameCount++;
+  if(gameActive) {
+    updatePlayer();
+    updateBoss();
+    updateProjectiles();
+    updateOrbs();
+    if(frameCount % 10 === 0) { updateTerrain(); updateRadar(); }
+  }
+  requestAnimationFrame(gameLoop);
+}
+
+window.addEventListener('load', () => {
+  initAudio();
+  spawnOrbs();
+  activateInvincibility(); // ⚠️ ACTIVAR INMORTALIDAD INMEDIATAMENTE
+  gameLoop();
+  updateTerrain();
+});
+</script>
+
+</body>
+</html>
