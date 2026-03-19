@@ -22,46 +22,43 @@ body { margin:0; overflow:hidden; cursor:none; }
          fog="type: exponential; color: #000000; density: 0.015"
          effects="bloom:true; bloomStrength:1.5; bloomRadius:0.5; bloomThreshold:0.1">
 
-  <!-- ===================== -->
   <!-- ASSETS -->
-  <!-- ===================== -->
   <a-asset-item id="neon-pillar" src="assets/blender_shape_keys_animation_test.glb"></a-asset-item>
   <a-assets>
     <a-asset-item id="grid" src="assets/90s_vaporwave_neon_grid_animated.glb"></a-asset-item>
     <audio id="music" src="assets/music.mp3" crossorigin="anonymous"></audio>
   </a-assets>
-  
+
   <!-- GRID -->
   <a-entity class="reactive" gltf-model="#grid" position="0 0 90"></a-entity>
   <a-entity class="reactive" gltf-model="#grid" position="-59 0 90"></a-entity>
   <a-entity class="reactive" gltf-model="#grid" position="59 0 90"></a-entity>
   <a-entity class="reactive" gltf-model="#grid" position="0 -22 330"></a-entity>
   <a-entity gltf-model="#neon-pillar" scale="0.2 0.2 0.2" position="0 1 27"></a-entity>
-  <!-- LUZ AMBIENTAL BASE -->
+
+  <!-- LUZ AMBIENTAL -->
   <a-light type="ambient" intensity="1.2" color="#ff00ff"></a-light>
 
   <!-- PLAYER -->
   <a-entity id="player" position="0 1.6 18" wasd-collision>
-    <a-entity camera="fov: 85"
-              look-controls="pointerLockEnabled: true">
+    <a-entity camera="fov: 85" look-controls="pointerLockEnabled: true">
       <a-cursor color="#00ffff" fuse="false" raycaster="objects: .clickable"></a-cursor>
     </a-entity>
   </a-entity>
 
   <!-- MUROS -->
-  <a-box position="0 0 0" width="50" height="0.1" depth="100" visible="false" wall></a-box>
-  <a-box position="-20 5 0" width="0.5" height="10" depth="100" visible="false" wall></a-box>
-  <a-box position="20 5 0" width="0.5" height="10" depth="100" visible="false" wall></a-box>
-  <a-box position="0 5 -50" width="50" height="10" depth="0.5" visible="false" wall></a-box>
-  <a-box position="0 5 35" width="50" height="10" depth="0.5" visible="false" wall></a-box>
+  <a-box position="0 0 0"    width="50" height="0.1" depth="100" visible="false" wall></a-box>
+  <a-box position="-20 5 0"  width="0.5" height="10" depth="100" visible="false" wall></a-box>
+  <a-box position="20 5 0"   width="0.5" height="10" depth="100" visible="false" wall></a-box>
+  <a-box position="0 5 -50"  width="50"  height="10" depth="0.5" visible="false" wall></a-box>
+  <a-box position="0 5 35"   width="50"  height="10" depth="0.5" visible="false" wall></a-box>
 
   <!-- PUERTAS -->
-  <a-box id="puerta1" class="clickable" position="-6 2 10" width="3" height="4" depth="0.5"></a-box>
-  <a-box id="puerta2" class="clickable" position="-6 2 -5" width="3" height="4" depth="0.5"></a-box>
-  <a-box id="puerta3" class="clickable" position="6 2 10"  width="3" height="4" depth="0.5"></a-box>
-  <a-box id="puerta4" class="clickable" position="6 2 -5"  width="3" height="4" depth="0.5"></a-box>
-  <a-box id="puerta5" class="clickable" position="0 2 25"  width="3" height="4" depth="0.5"></a-box>
- 
+  <a-box id="puerta1" class="clickable" position="-6 2 10"  width="3" height="4" depth="0.5"></a-box>
+  <a-box id="puerta2" class="clickable" position="-6 2 -5"  width="3" height="4" depth="0.5"></a-box>
+  <a-box id="puerta3" class="clickable" position="6 2 10"   width="3" height="4" depth="0.5"></a-box>
+  <a-box id="puerta4" class="clickable" position="6 2 -5"   width="3" height="4" depth="0.5"></a-box>
+  <a-box id="puerta5" class="clickable" position="0 2 25"   width="3" height="4" depth="0.5"></a-box>
 
   <!-- LABELS SALAS -->
   <a-text id="label1" position="-6 4.8 10.4"  align="center" width="4" color="#00ffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="SALA 01"></a-text>
@@ -72,26 +69,35 @@ body { margin:0; overflow:hidden; cursor:none; }
   <a-text id="lock3"  position="6 2.8 10.4"   align="center" width="3" color="#ff0000" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="[ BLOQUEADA ]"></a-text>
   <a-text id="lock4"  position="6 2.8 -4.6"   align="center" width="3" color="#ff0000" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="[ BLOQUEADA ]"></a-text>
 
+  <!-- ══════════════════════════════════════════
+       PICKUP ESCONDIDO — Trophy detrás de puerta5
+       puerta5 está en position="0 2 25"
+       El trophy queda justo detrás, en z=26.5
+       El jugador tiene que rodear o acercarse mucho
+       ══════════════════════════════════════════ -->
+  <a-entity
+    id="pickup-trophy"
+    gltf-model="assets/absolute_supremacy_trophy.glb"
+    scale="0.35 0.35 0.35"
+    position="0 1.2 26.5"
+    class="clickable">
+  </a-entity>
+
 </a-scene>
 
 <script>
-
-/* ========================= */
-/* AUDIO REACTIVO COMPLETO */
-/* ========================= */
-
-const sceneEl = document.getElementById("scene");
-const audio = document.getElementById("music");
+/* ── AUDIO REACTIVO ──────────────────────────────────── */
+const sceneEl        = document.getElementById("scene");
+const audio          = document.getElementById("music");
 const reactiveModels = document.querySelectorAll(".reactive");
 
 const AudioContext = window.AudioContext || window.webkitAudioContext;
-const audioCtx = new AudioContext();
-const analyser = audioCtx.createAnalyser();
-const source = audioCtx.createMediaElementSource(audio);
+const audioCtx     = new AudioContext();
+const analyser     = audioCtx.createAnalyser();
+const source       = audioCtx.createMediaElementSource(audio);
 
 source.connect(analyser);
 analyser.connect(audioCtx.destination);
-
 analyser.fftSize = 512;
 const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
@@ -103,131 +109,58 @@ window.addEventListener("click", () => {
 let smoothBass = 0;
 
 function reactiveLoop() {
-
   requestAnimationFrame(reactiveLoop);
-
   analyser.getByteFrequencyData(dataArray);
 
   let bass = 0;
-  for(let i=0; i<40; i++){
-    bass += dataArray[i];
-  }
-  bass = bass / 40;
+  for (let i = 0; i < 40; i++) bass += dataArray[i];
+  bass /= 40;
 
-  let normalized = bass / 255;
-
-  // Suavizado real
+  const normalized = bass / 255;
   smoothBass += (normalized - smoothBass) * 0.08;
 
-  /* ========================= */
-  /* BACKGROUND (PARTE DESDE NEGRO) */
-  /* ========================= */
-
-  let lightness = smoothBass * 18; 
-  // Rango: 0% → 18%
-  // 0 = negro absoluto
-
-  const bgColor = `hsl(300, 80%, ${lightness}%)`;
-
+  const lightness = smoothBass * 18;
+  const bgColor   = `hsl(300, 80%, ${lightness}%)`;
   sceneEl.setAttribute("background", "color", bgColor);
-  sceneEl.setAttribute("fog", "color", bgColor);
+  sceneEl.setAttribute("fog",        "color", bgColor);
 
-  /* ========================= */
-  /* EMISSIVE EN MODELOS (SIN BLANCO) */
-  /* ========================= */
-
-  reactiveModels.forEach((model)=>{
-
-    model.object3D.traverse((node)=>{
-
-      if(node.material){
-
-        if(!node.material.originalEmissive){
+  reactiveModels.forEach(model => {
+    model.object3D.traverse(node => {
+      if (node.material) {
+        if (!node.material.originalEmissive)
           node.material.originalEmissive = node.material.emissive.clone();
-        }
-
         node.material.emissive.copy(node.material.originalEmissive);
-
-        let emissiveIntensity = 0.5 + (smoothBass * 2.0);
-
-        // LIMITE DURO PARA EVITAR BLANCO
-        if(emissiveIntensity > 2.5){
-          emissiveIntensity = 2.5;
-        }
-
-        node.material.emissiveIntensity = emissiveIntensity;
+        let ei = 0.5 + smoothBass * 2.0;
+        if (ei > 2.5) ei = 2.5;
+        node.material.emissiveIntensity = ei;
       }
-
     });
-
   });
-
 }
-
 reactiveLoop();
 
-
-/* ========================= */
-/* MATRIX RAIN (ORIGINAL) */
-/* ========================= */
-
+/* ── MATRIX RAIN ─────────────────────────────────────── */
 const scene = document.querySelector("a-scene");
 
-function spawnMatrixColumn(){
-
-  const x = (Math.random()*60) - 30;
-  const z = (Math.random()*-90);
-
-  for(let i=0;i<40;i++){
-
+function spawnMatrixColumn() {
+  const x = Math.random() * 60 - 30;
+  const z = Math.random() * -90;
+  for (let i = 0; i < 40; i++) {
     const char = document.createElement("a-entity");
-    const symbols = "01<>/{}[];:+=-*#%&";
-    const randomSymbol = symbols[Math.floor(Math.random()*symbols.length)];
-
-    char.setAttribute("text", {
-      value: randomSymbol,
-      color: "#00ff88",
-      align: "center",
-      width: 4
-    });
-
-    char.setAttribute("position", {
-      x: x,
-      y: 30 + (i * 1.5),
-      z: z
-    });
-
-    char.setAttribute("scale","1.8 1.8 1.8");
-
-    char.setAttribute("animation", {
-      property: "position",
-      to: `${x} -20 ${z}`,
-      dur: 7000,
-      easing: "linear"
-    });
-
+    const syms = "01<>/{}[];:+=-*#%&";
+    char.setAttribute("text", { value: syms[Math.floor(Math.random() * syms.length)], color: "#00ff88", align: "center", width: 4 });
+    char.setAttribute("position", { x, y: 30 + i * 1.5, z });
+    char.setAttribute("scale", "1.8 1.8 1.8");
+    char.setAttribute("animation", { property: "position", to: `${x} -20 ${z}`, dur: 7000, easing: "linear" });
     scene.appendChild(char);
-
-    setTimeout(()=>{
-      if(char.parentNode){
-        scene.removeChild(char);
-      }
-    }, 7500);
-
+    setTimeout(() => { if (char.parentNode) scene.removeChild(char); }, 7500);
   }
-
 }
-
 setInterval(spawnMatrixColumn, 200);
-
 </script>
 
-
 <script>
-/* ========================= */
-/* PROGRESION DE SALAS       */
-/* ========================= */
-
+/* ── PROGRESIÓN DE SALAS ─────────────────────────────── */
 const SALAS_CFG = [
   { id:"puerta1", req:null,    dest:"nivel1.html", lockEl:null,    color:"#00ffff" },
   { id:"puerta2", req:"sala1", dest:"nivel2.html", lockEl:"lock2", color:"#ff6600" },
@@ -237,8 +170,8 @@ const SALAS_CFG = [
 
 document.querySelector("a-scene").addEventListener("loaded", () => {
   SALAS_CFG.forEach(s => {
-    const puerta    = document.getElementById(s.id);
-    const unlocked  = !s.req || sessionStorage.getItem(s.req + "_done") === "true";
+    const puerta   = document.getElementById(s.id);
+    const unlocked = !s.req || sessionStorage.getItem(s.req + "_done") === "true";
 
     if (unlocked) {
       puerta.setAttribute("material",
@@ -250,13 +183,18 @@ document.querySelector("a-scene").addEventListener("loaded", () => {
         "color:#220000; emissive:#ff0000; emissiveIntensity:0.5; opacity:0.6; transparent:true;");
       puerta.classList.remove("clickable");
       puerta.addEventListener("click", () => {
-        puerta.setAttribute("material","color:#440000; emissive:#ff0000; emissiveIntensity:2.5; opacity:0.8; transparent:true;");
+        puerta.setAttribute("material", "color:#440000; emissive:#ff0000; emissiveIntensity:2.5; opacity:0.8; transparent:true;");
         setTimeout(() =>
-          puerta.setAttribute("material","color:#220000; emissive:#ff0000; emissiveIntensity:0.5; opacity:0.6; transparent:true;")
+          puerta.setAttribute("material", "color:#220000; emissive:#ff0000; emissiveIntensity:0.5; opacity:0.6; transparent:true;")
         , 350);
       });
     }
   });
+
+  // puerta5 — sin destino definido aún, solo decorativa
+  const p5 = document.getElementById("puerta5");
+  p5.setAttribute("material",
+    "color:#ff00ff22; emissive:#ff00ff; emissiveIntensity:1.2; opacity:0.6; transparent:true;");
 });
 </script>
 

@@ -1,30 +1,36 @@
 /* ============================================================
-   hotbar.js — DEBUG
+   hotbar.js — 5 slots, se llena recogiendo items en niveles
+   ============================================================
+   Mapa de items:
+   pickup-final-key   → nivel 1  (final_key.glb)
+   pickup-keycard     → nivel 2  (key_card_lvl_5.glb)
+   pickup-rkey        → nivel 3  (r_key_-_the_binding_of_isaac.glb)
+   pickup-chest-key   → nivel 4  (big_chest_key.glb)
+   pickup-trophy      → lobby    (absolute_supremacy_trophy.glb, escondido en puerta5)
    ============================================================ */
 
-/* ============================================================
-   ▼▼▼  PON AQUÍ TUS MODELOS GLB  ▼▼▼
-   - src   → ruta al archivo .glb
-   - label → nombre que aparece debajo
-   Puedes tener hasta 6 slots. Borra los que no uses.
-   ============================================================ */
-const HOTBAR_ITEMS = [
-  // { src: "models/TU_MODELO_1.glb", label: "Nombre 1" },
-  // { src: "models/TU_MODELO_2.glb", label: "Nombre 2" },
-  // { src: "models/TU_MODELO_3.glb", label: "Nombre 3" },
-  // { src: "models/TU_MODELO_4.glb", label: "Nombre 4" },
-  // { src: "models/TU_MODELO_5.glb", label: "Nombre 5" },
-  // { src: "models/TU_MODELO_6.glb", label: "Nombre 6" },
+const PICKUP_DEFS = [
+  { sceneId: "pickup-final-key",  src: "assets/final_key.glb",                          label: "Final Key"  },
+  { sceneId: "pickup-keycard",    src: "assets/key_card_lvl_5.glb",                     label: "Keycard"    },
+  { sceneId: "pickup-rkey",       src: "assets/r_key_-_the_binding_of_isaac.glb",       label: "R Key"      },
+  { sceneId: "pickup-chest-key",  src: "assets/big_chest_key.glb",                      label: "Chest Key"  },
+  { sceneId: "pickup-trophy",     src: "assets/absolute_supremacy_trophy.glb",          label: "Trophy"     },
 ];
-/* ▲▲▲  FIN DE LA ZONA DE EDICIÓN  ▲▲▲ */
 
+const MAX_SLOTS   = 5;
+const STORAGE_KEY = "hotbar_v3";
 
+function loadInventory() {
+  try { return JSON.parse(sessionStorage.getItem(STORAGE_KEY)) || []; }
+  catch { return []; }
+}
+function saveInventory() {
+  sessionStorage.setItem(STORAGE_KEY, JSON.stringify(inventory));
+}
 
+let inventory = loadInventory();
 
-/* ============================================================
-   NO TOQUES NADA DE AQUÍ PARA ABAJO
-   ============================================================ */
-
+/* ── ESTILOS ─────────────────────────────────────────── */
 const style = document.createElement("style");
 style.textContent = `
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
@@ -54,6 +60,12 @@ style.textContent = `
     justify-content: center;
     overflow: hidden;
     box-shadow: 0 0 8px #ff00ff33, inset 0 0 10px #ff00ff11;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .hb-slot.hb-filled {
+    border-color: #ff00ffcc;
+    box-shadow: 0 0 14px #ff00ff55, inset 0 0 10px #ff00ff22;
   }
 
   .hb-slot::before {
@@ -99,36 +111,76 @@ style.textContent = `
     font-size: 8px;
     color: #ff00ff55;
   }
+
+  #hb-msg {
+    position: fixed;
+    top: 38px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 3px;
+    padding: 6px 18px;
+    border: 1px solid #ff00ff;
+    border-radius: 3px;
+    color: #ff00ff;
+    background: rgba(0,0,0,0.75);
+    box-shadow: 0 0 12px #ff00ff66;
+    z-index: 99999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.35s;
+  }
 `;
 document.head.appendChild(style);
 
+/* ── MENSAJE ─────────────────────────────────────────── */
+let msgEl, msgTimer;
+function showMsg(text, color) {
+  if (!msgEl) {
+    msgEl = document.createElement("div");
+    msgEl.id = "hb-msg";
+    document.body.appendChild(msgEl);
+  }
+  color = color || "#ff00ff";
+  msgEl.textContent       = text;
+  msgEl.style.color       = color;
+  msgEl.style.borderColor = color;
+  msgEl.style.boxShadow   = `0 0 12px ${color}88`;
+  msgEl.style.opacity     = "1";
+  clearTimeout(msgTimer);
+  msgTimer = setTimeout(() => { msgEl.style.opacity = "0"; }, 1800);
+}
+
+/* ── BUILD HOTBAR ─────────────────────────────────────── */
 function buildHotbar() {
+  const old = document.getElementById("debug-hotbar");
+  if (old) old.remove();
+
   const bar = document.createElement("div");
   bar.id = "debug-hotbar";
 
-  // Siempre 6 slots visibles
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < MAX_SLOTS; i++) {
     const slot = document.createElement("div");
-    slot.className = "hb-slot";
+    const item = inventory[i];
+    slot.className = "hb-slot" + (item ? " hb-filled" : "");
+    slot.id = `hb-slot-${i}`;
 
     const num = document.createElement("span");
-    num.className = "hb-num";
+    num.className   = "hb-num";
     num.textContent = i + 1;
-
-    const item = HOTBAR_ITEMS[i];
+    slot.appendChild(num);
 
     if (item) {
       const label = document.createElement("span");
-      label.className = "hb-label";
+      label.className   = "hb-label";
       label.textContent = item.label;
-      slot.appendChild(num);
       slot.appendChild(label);
       renderGLB(slot, item.src);
     } else {
       const empty = document.createElement("span");
-      empty.className = "hb-empty";
+      empty.className   = "hb-empty";
       empty.textContent = "—";
-      slot.appendChild(num);
       slot.appendChild(empty);
     }
 
@@ -138,11 +190,12 @@ function buildHotbar() {
   document.body.appendChild(bar);
 }
 
+/* ── RENDER GLB EN CANVAS ────────────────────────────── */
 function renderGLB(slotEl, src) {
   if (typeof THREE === "undefined") return;
 
   const canvas = document.createElement("canvas");
-  canvas.width = 50;
+  canvas.width  = 50;
   canvas.height = 50;
   slotEl.insertBefore(canvas, slotEl.querySelector(".hb-label"));
 
@@ -194,8 +247,87 @@ function renderGLB(slotEl, src) {
   })();
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", buildHotbar);
-} else {
+/* ── ATTACH PICKUPS EN ESCENA A-FRAME ───────────────── */
+function attachPickups() {
+  PICKUP_DEFS.forEach(def => {
+    const el = document.getElementById(def.sceneId);
+    if (!el) return;
+
+    // Ya recogido → ocultar
+    if (inventory.find(i => i.sceneId === def.sceneId)) {
+      el.setAttribute("visible", "false");
+      return;
+    }
+
+    // Animación flotante
+    const pos = el.getAttribute("position") || { x: 0, y: 1, z: 0 };
+    el.setAttribute("animation__float", {
+      property: "position",
+      dir:      "alternate",
+      dur:      1800,
+      loop:     true,
+      easing:   "easeInOutSine",
+      from:     `${pos.x} ${pos.y} ${pos.z}`,
+      to:       `${pos.x} ${parseFloat(pos.y) + 0.3} ${pos.z}`
+    });
+
+    // Rotación continua
+    el.setAttribute("animation__spin", {
+      property: "rotation",
+      to:       "0 360 0",
+      dur:      4000,
+      loop:     true,
+      easing:   "linear"
+    });
+
+    el.classList.add("clickable");
+
+    el.addEventListener("click", () => {
+      if (inventory.length >= MAX_SLOTS) {
+        showMsg("INVENTARIO LLENO", "#ff0000");
+        return;
+      }
+      if (inventory.find(i => i.sceneId === def.sceneId)) return;
+
+      inventory.push({ sceneId: def.sceneId, src: def.src, label: def.label });
+      saveInventory();
+      buildHotbar();
+
+      el.setAttribute("visible", "false");
+      el.classList.remove("clickable");
+
+      showMsg("+ " + def.label + " RECOGIDO", "#ff00ff");
+    });
+  });
+}
+
+/* ── API PÚBLICA ─────────────────────────────────────── */
+window.Hotbar = {
+  has(sceneId)  { return !!inventory.find(i => i.sceneId === sceneId); },
+  consume(sceneId) {
+    const idx = inventory.findIndex(i => i.sceneId === sceneId);
+    if (idx === -1) return false;
+    const item = inventory.splice(idx, 1)[0];
+    saveInventory();
+    buildHotbar();
+    showMsg("USADO: " + item.label, "#ffaa00");
+    return true;
+  },
+  getAll() { return [...inventory]; },
+};
+
+/* ── INIT ────────────────────────────────────────────── */
+function init() {
   buildHotbar();
+  const sceneEl = document.querySelector("a-scene");
+  if (sceneEl) {
+    if (sceneEl.hasLoaded) attachPickups();
+    else sceneEl.addEventListener("loaded", attachPickups);
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", init);
+} else {
+  init();
 }

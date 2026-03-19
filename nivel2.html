@@ -39,118 +39,67 @@
     </a-entity>
   </a-entity>
 
-  <!-- SUELO -->
   <a-plane rotation="-90 0 0" width="80" height="80" color="#000"></a-plane>
   <a-plane rotation="-90 0 0" width="80" height="80" material="wireframe:true; color:#ff6600; emissive:#ff6600; emissiveIntensity:2.5;"></a-plane>
-  <!-- TECHO -->
   <a-plane rotation="90 0 0" position="0 10 0" width="80" height="80" color="#000"></a-plane>
   <a-plane rotation="90 0 0" position="0 10 0" width="80" height="80" material="wireframe:true; color:#ff6600; emissive:#ff6600; emissiveIntensity:1;"></a-plane>
-  <!-- TUBOS NEON -->
   <a-cylinder position="-19.8 8 0" radius="0.06" height="60" rotation="90 0 0" material="color:#ff6600; emissive:#ff6600; emissiveIntensity:3;"></a-cylinder>
   <a-cylinder position="19.8 8 0" radius="0.06" height="60" rotation="90 0 0" material="color:#ff6600; emissive:#ff6600; emissiveIntensity:3;"></a-cylinder>
 
-  <!-- TORUS RECOMPENSA -->
   <a-torus id="torusGLB" position="0 3 -15" radius="2" radius-tubular="0.2"
     material="wireframe:true; color:#333; emissive:#111; emissiveIntensity:1;"></a-torus>
 
-  <!-- TORUS SALIDA -->
   <a-torus id="torusSalida" class="clickable" position="0 3 15" radius="2" radius-tubular="0.2"
-    material="wireframe:true; color:#ff6600; emissive:#ff6600; emissiveIntensity:2;"></a-torus>
+    material="wireframe:true; color:#00ffff; emissive:#ff6600; emissiveIntensity:2;"></a-torus>
 
   <a-entity id="matrix-root"></a-entity>
 
-  <!-- ═══════════════════════════════════════════════
-       PANEL PRINCIPAL  (intro + quiz comparten espacio)
-  ═══════════════════════════════════════════════ -->
   <a-entity id="panel" position="0 4 -10">
-
-    <!-- Fondo panel -->
     <a-plane width="12" height="8" material="color:#020202; emissive:#ff6600; emissiveIntensity:0.25; opacity:0.88; transparent:true;"></a-plane>
-    <!-- Marco neon -->
     <a-box position="0 4.05 0.02"  width="12.1" height="0.07" depth="0.04" material="color:#ff6600; emissive:#ff6600; emissiveIntensity:3;"></a-box>
     <a-box position="0 -4.05 0.02" width="12.1" height="0.07" depth="0.04" material="color:#ff6600; emissive:#ff6600; emissiveIntensity:3;"></a-box>
     <a-box position="-6.05 0 0.02" width="0.07" height="8.1" depth="0.04"  material="color:#ff6600; emissive:#ff6600; emissiveIntensity:3;"></a-box>
     <a-box position="6.05 0 0.02"  width="0.07" height="8.1" depth="0.04"  material="color:#ff6600; emissive:#ff6600; emissiveIntensity:3;"></a-box>
 
-    <!-- ── INTRO (visible al entrar) ── -->
     <a-entity id="introPanel">
-
-      <!-- Etiqueta sala -->
-      <a-text position="0 3.4 0.12" align="center" width="9" color="#ff6600"
-        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="32" value="SALA 02 // SISTEMAS OPERATIVOS"></a-text>
-
-      <!-- Separador top -->
-      <a-box position="0 2.9 0.02" width="9.5" height="0.04" depth="0.02"
-        material="color:#ff6600; emissive:#ff6600; emissiveIntensity:2; opacity:0.4; transparent:true;"></a-box>
-
-      <!-- Regla 1 -->
-      <a-text position="0 2.2 0.12" align="center" width="9.5" color="#ffffff"
-        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="34" value="RESPONDE 5 DE 8 PREGUNTAS CORRECTAMENTE"></a-text>
-
-      <!-- Regla 2 -->
-      <a-text position="0 1.1 0.12" align="center" width="9.5" color="#ffffff"
-        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="34" value="PARA DESBLOQUEAR EL OBJETO DE ESTA SALA"></a-text>
-
-      <!-- Separador mid -->
-      <a-box position="0 0.45 0.02" width="7" height="0.03" depth="0.02"
-        material="color:#ff6600; emissive:#ff6600; emissiveIntensity:1.5; opacity:0.25; transparent:true;"></a-box>
-
-      <!-- Regla 3 -->
-      <a-text position="0 -0.2 0.12" align="center" width="9" color="#ff6600"
-        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="34" value="⏱  15 SEGUNDOS POR PREGUNTA"></a-text>
-
-      <!-- Regla 4 -->
-      <a-text position="0 -1.1 0.12" align="center" width="9" color="#ff6600"
-        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="34" value="◈  3 OPCIONES — SOLO UNA CORRECTA"></a-text>
-
-      <!-- Regla 5 -->
-      <a-text position="0 -2.0 0.12" align="center" width="9" color="#ff6600"
-        font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="34" value="⚠  SI FALLAS VUELVES AL LOBBY"></a-text>
-
-      <!-- Botón INICIAR -->
+      <a-text position="0 3.4 0.12" align="center" width="9" color="#00ffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="32" value="SALA 02 // SISTEMAS OPERATIVOS"></a-text>
+      <a-box position="0 2.9 0.02" width="9.5" height="0.04" depth="0.02" material="color:#00ffff; emissive:#ff6600; emissiveIntensity:2; opacity:0.4; transparent:true;"></a-box>
+      <a-text position="0 2.2 0.12" align="center" width="9.5" color="#ffffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="34" value="RESPONDE 5 DE 8 PREGUNTAS CORRECTAMENTE"></a-text>
+      <a-text position="0 1.1 0.12" align="center" width="9.5" color="#ffffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="34" value="PARA DESBLOQUEAR EL OBJETO DE ESTA SALA"></a-text>
+      <a-box position="0 0.45 0.02" width="7" height="0.03" depth="0.02" material="color:#00ffff; emissive:#00ffff; emissiveIntensity:1.5; opacity:0.25; transparent:true;"></a-box>
+      <a-text position="0 -0.2 0.12" align="center" width="9" color="#00ffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="34" value="⏱  15 SEGUNDOS POR PREGUNTA"></a-text>
+      <a-text position="0 -1.1 0.12" align="center" width="9" color="#00ffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="34" value="◈  3 OPCIONES — SOLO UNA CORRECTA"></a-text>
+      <a-text position="0 -2.0 0.12" align="center" width="9" color="#00ffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="34" value="⚠  SI FALLAS VUELVES AL LOBBY"></a-text>
       <a-entity position="0 -3.2 0.08">
-        <a-box id="btnIniciar" class="clickable" position="0 0 0.03" width="6" height="1.0" depth="0.05"
-          material="color:#050505; emissive:#ff6600; emissiveIntensity:1.2;"></a-box>
-        <a-text position="0 0 0.12" align="center" width="5.5" color="#ffffff"
-          font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="20" value="[ INICIAR SALA ]"></a-text>
+        <a-box id="btnIniciar" class="clickable" position="0 0 0.03" width="6" height="1.0" depth="0.05" material="color:#050505; emissive:#00ffff; emissiveIntensity:1.2;"></a-box>
+        <a-text position="0 0 0.12" align="center" width="5.5" color="#ffffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="20" value="[ INICIAR SALA ]"></a-text>
       </a-entity>
-
     </a-entity>
 
-    <!-- ── QUIZ (oculto hasta pulsar INICIAR) ── -->
     <a-entity id="quizPanel" visible="false">
-      <!-- Pregunta -->
       <a-text id="qText" position="0 3.0 0.12" align="center" width="10.5" color="#ffffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="30" value="..."></a-text>
-      <a-text id="qGlow" position="0 3.0 0.09" align="center" width="11"   color="#ff6600"    font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="30" value="..." opacity="0.25"></a-text>
-
-      <!-- BOTON A -->
-      <a-box id="btnA" class="clickable" position="0 1.0 0.06" width="10" height="1.1" depth="0.05"
-        material="color:#0a000a; emissive:#ff6600; emissiveIntensity:0.6;">
+      <a-text id="qGlow" position="0 3.0 0.09" align="center" width="11" color="#00ffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="30" value="..." opacity="0.25"></a-text>
+      <a-box id="btnA" class="clickable" position="0 1.0 0.06" width="10" height="1.1" depth="0.05" material="color:#0a000a; emissive:#00ffff; emissiveIntensity:0.6;">
         <a-text id="lblA" position="0 0 0.06" align="center" width="9.5" color="#ffffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="38" value="..."></a-text>
       </a-box>
-
-      <!-- BOTON B -->
-      <a-box id="btnB" class="clickable" position="0 -0.5 0.06" width="10" height="1.1" depth="0.05"
-        material="color:#0a000a; emissive:#ff6600; emissiveIntensity:0.6;">
+      <a-box id="btnB" class="clickable" position="0 -0.5 0.06" width="10" height="1.1" depth="0.05" material="color:#0a000a; emissive:#00ffff; emissiveIntensity:0.6;">
         <a-text id="lblB" position="0 0 0.06" align="center" width="9.5" color="#ffffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="38" value="..."></a-text>
       </a-box>
-
-      <!-- BOTON C -->
-      <a-box id="btnC" class="clickable" position="0 -2.0 0.06" width="10" height="1.1" depth="0.05"
-        material="color:#0a000a; emissive:#ff6600; emissiveIntensity:0.6;">
+      <a-box id="btnC" class="clickable" position="0 -2.0 0.06" width="10" height="1.1" depth="0.05" material="color:#0a000a; emissive:#00ffff; emissiveIntensity:0.6;">
         <a-text id="lblC" position="0 0 0.06" align="center" width="9.5" color="#ffffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" wrap-count="38" value="..."></a-text>
       </a-box>
     </a-entity>
-
   </a-entity>
 
 </a-scene>
 
 <script>
-  // ── PROGRESION ─────────────────────────────────────────────
-  const SALA_ID  = "sala2";
-  const SALA_REQ = "sala1";
-  const SALA_NEXT = "nivel3.html";
+  const SALA_ID   = "sala2";
+  const SALA_REQ  = "sala1";
+  // ID del pickup que se guarda en hotbar al completar esta sala
+  const PICKUP_ID = "pickup-keycard";
+  const PICKUP_SRC   = "assets/key_card_lvl_5.glb";
+  const PICKUP_LABEL = "Keycard";
 
   if (SALA_REQ && sessionStorage.getItem(SALA_REQ+"_done") !== "true") {
     document.addEventListener("DOMContentLoaded", () => {
@@ -166,7 +115,6 @@
 
   function markSalaDone() { sessionStorage.setItem(SALA_ID+"_done","true"); }
 
-  // ── DATOS ──────────────────────────────────────────────────
   const questions = [
     {q:"En Linux, que comando muestra los procesos activos del sistema?",a:"A) ls -la",b:"B) ps aux",c:"C) netstat",correct:"b"},
     {q:"Que sistema de ficheros usa Windows por defecto en discos modernos?",a:"A) FAT32",b:"B) EXT4",c:"C) NTFS",correct:"c"},
@@ -178,14 +126,7 @@
     {q:"Que comando Linux muestra el espacio usado en los sistemas de ficheros?",a:"A) du -sh",b:"B) free -h",c:"C) df -h",correct:"c"},
   ];
 
-  // ════════════════════════════════════════════════════
-  // ▼▼▼  PON AQUI LA RUTA DE TU MODELO GLB  ▼▼▼
-  const GLB_SRC = "assets/key_card_lvl_5.glb";
-  // ▲▲▲  PON AQUI LA RUTA DE TU MODELO GLB  ▲▲▲
-  // ════════════════════════════════════════════════════
-
-  const NC = "#ff6600";
-  const TIME = 15;
+  const NC = "#ff6600", TIME = 15;
   let current=0, correct=0, answering=false, timerInt=null, timeLeft=TIME, started=false;
   const scene = document.querySelector("a-scene");
   const torusGLB = document.getElementById("torusGLB");
@@ -194,25 +135,24 @@
   const hudBar  = document.getElementById("hud-bar");
   const hudProg = document.getElementById("hud-prog");
 
-  // ── INICIAR ────────────────────────────────────────────────
   document.querySelector("a-scene").addEventListener("loaded", () => {
     document.getElementById("btnIniciar").addEventListener("click", () => {
       document.getElementById("introPanel").setAttribute("visible","false");
       document.getElementById("quizPanel").setAttribute("visible","true");
-      hudWrap.style.display = "block";
-      hudProg.style.display = "block";
-      started = true;
-      loadQ();
-      startTimer();
-      spawnMatrix();
+      hudWrap.style.display = "block"; hudProg.style.display = "block";
+      started = true; loadQ(); startTimer(); spawnMatrix();
     });
-
-    document.getElementById("torusSalida").addEventListener("click", () => {
-      location.href = "lobby.html";
+    document.getElementById("torusSalida").addEventListener("click", () => { location.href = "lobby.html"; });
+    document.getElementById("btnA").addEventListener("click",()=>answer("a","btnA"));
+    document.getElementById("btnB").addEventListener("click",()=>answer("b","btnB"));
+    document.getElementById("btnC").addEventListener("click",()=>answer("c","btnC"));
+    ["btnA","btnB","btnC"].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener("mouseenter", () => { if (!answering) el.setAttribute("material", `color:#1a001a; emissive:${NC}; emissiveIntensity:2;`); });
+      el.addEventListener("mouseleave", () => { if (!answering) el.setAttribute("material", `color:#0a000a; emissive:${NC}; emissiveIntensity:0.6;`); });
     });
   });
 
-  // ── MATRIX ─────────────────────────────────────────────────
   function spawnMatrix() {
     const root = document.getElementById("matrix-root");
     const sym = "01<>/{}[];:+=*#&%@?";
@@ -223,64 +163,49 @@
         ch.setAttribute("text",{value:sym[Math.floor(Math.random()*sym.length)],color:NC,align:"center",width:3});
         ch.setAttribute("position",`${x} ${26+i*1.4} ${z}`);
         ch.setAttribute("animation",{property:"position",to:`${x} -16 ${z}`,dur:6000,easing:"linear"});
-        root.appendChild(ch);
-        setTimeout(()=>ch.remove(),6200);
+        root.appendChild(ch); setTimeout(()=>ch.remove(),6200);
       }
     },300);
   }
 
-  // ── TIMER ──────────────────────────────────────────────────
   function startTimer() {
     clearInterval(timerInt); timeLeft=TIME; updateHUD();
     timerInt = setInterval(()=>{ timeLeft--; updateHUD(); if(timeLeft<=0){clearInterval(timerInt);timeExpired();} },1000);
   }
   function updateHUD() {
-    hudNum.textContent = timeLeft;
-    hudBar.style.width = (timeLeft/TIME*100)+"%";
+    hudNum.textContent = timeLeft; hudBar.style.width = (timeLeft/TIME*100)+"%";
     const col = timeLeft>8 ? NC : timeLeft>4 ? "#ffaa00" : "#ff2244";
-    hudBar.style.background = col;
-    hudNum.style.color = col;
-    hudNum.style.textShadow = `0 0 12px ${col}`;
+    hudBar.style.background=col; hudNum.style.color=col; hudNum.style.textShadow=`0 0 12px ${col}`;
   }
-  function timeExpired() {
-    if(answering) return; answering=true;
-    particles("#ff2244", new THREE.Vector3(0,4,-10));
-    next();
-  }
+  function timeExpired() { if(answering) return; answering=true; particles("#ff2244", new THREE.Vector3(0,4,-10)); next(); }
 
-  // ── PREGUNTAS ──────────────────────────────────────────────
   function loadQ() {
     const q=questions[current];
     ["qText","qGlow"].forEach(id=>document.getElementById(id).setAttribute("value",q.q));
     document.getElementById("lblA").setAttribute("value",q.a);
     document.getElementById("lblB").setAttribute("value",q.b);
     document.getElementById("lblC").setAttribute("value",q.c);
-    hudProg.textContent = "✓ "+correct+" / "+questions.length;
-    resetBtns();
+    hudProg.textContent = "✓ "+correct+" / "+questions.length; resetBtns();
   }
   function resetBtns() {
-    ["btnA","btnB","btnC"].forEach(id=>
-      document.getElementById(id).setAttribute("material",`color:#0a000a; emissive:${NC}; emissiveIntensity:0.6;`));
+    ["btnA","btnB","btnC"].forEach(id=>document.getElementById(id).setAttribute("material",`color:#0a000a; emissive:${NC}; emissiveIntensity:0.6;`));
     hudNum.style.color=NC; hudNum.style.textShadow=`0 0 12px ${NC}`; hudBar.style.background=NC;
   }
-
   function answer(choice, btnId) {
     if(answering||!started) return; answering=true; clearInterval(timerInt);
     const btn=document.getElementById(btnId);
     const ok = questions[current].correct===choice;
     const pos=new THREE.Vector3(); btn.object3D.getWorldPosition(pos);
     if(ok){ correct++; btn.setAttribute("material","color:#002200; emissive:#00ff44; emissiveIntensity:3;"); particles("#00ff44",pos); }
-    else { btn.setAttribute("material","color:#220000; emissive:#ff2244; emissiveIntensity:3;"); particles("#ff2244",pos); }
+    else  { btn.setAttribute("material","color:#220000; emissive:#ff2244; emissiveIntensity:3;"); particles("#ff2244",pos); }
     hudProg.textContent="✓ "+correct+" / "+questions.length;
     setTimeout(()=>next(),900);
   }
   function next() {
     current++;
-    if(current>=questions.length) { finishQuiz(); return; }
+    if(current>=questions.length){ finishQuiz(); return; }
     answering=false; loadQ(); startTimer();
   }
-
-  // ── PARTICULAS ─────────────────────────────────────────────
   function particles(col, wp) {
     for(let i=0;i<22;i++) {
       const p=document.createElement("a-sphere");
@@ -293,47 +218,37 @@
       scene.appendChild(p); setTimeout(()=>p.remove(),800);
     }
   }
-
-  // ── FIN QUIZ ───────────────────────────────────────────────
   function finishQuiz() {
     clearInterval(timerInt);
     hudWrap.style.display="none"; hudProg.style.display="none";
     document.getElementById("quizPanel").setAttribute("visible","false");
     document.getElementById("panel").setAttribute("visible","false");
-
     const passed = correct >= Math.ceil(questions.length * 0.6);
-
     if(!passed) {
       torusGLB.setAttribute("material","wireframe:true; color:#ff0000; emissive:#ff0000; emissiveIntensity:2;");
-      resultText("FALLO CRITICO","#ff2244","VUELVE AL LOBBY E INTENTALO DE NUEVO", 15);
-      addLight("#ff0000");
-      return;
+      resultText("FALLO CRITICO","#ff2244","VUELVE AL LOBBY E INTENTALO DE NUEVO",15);
+      addLight("#ff0000"); return;
     }
-
     torusGLB.setAttribute("material","wireframe:true; color:#00ff44; emissive:#00ff44; emissiveIntensity:2;");
-    resultText("ACCESO CONCEDIDO","#00ff44","RECOGE TU OBJETO Y AVANZA", -15);
+    resultText("ACCESO CONCEDIDO","#00ff44","RECOGE TU OBJETO Y AVANZA",-15);
     addLight("#00ff44");
     spawnPrompt();
   }
-
-  function resultText(title, col, sub, z=- 15) {
+  function resultText(title, col, sub, z=-15) {
     const z1=z+0.1, z2=z;
     [[title,"#fff","14",`0 9 ${z1}`],[title,col,"15",`0 9 ${z2}`],[sub,"#fff","10",`0 7.6 ${z1}`],[sub,col,"10.8",`0 7.6 ${z2}`]].forEach(([v,c,w,p])=>{
       const t=document.createElement("a-text");
-      t.setAttribute("value",v); t.setAttribute("align","center");
-      t.setAttribute("color",c); t.setAttribute("width",w);
-      t.setAttribute("position",p); t.setAttribute("font","https://cdn.aframe.io/fonts/Exo2Bold.fnt");
+      t.setAttribute("value",v); t.setAttribute("align","center"); t.setAttribute("color",c);
+      t.setAttribute("width",w); t.setAttribute("position",p); t.setAttribute("font","https://cdn.aframe.io/fonts/Exo2Bold.fnt");
       scene.appendChild(t);
     });
   }
   function addLight(col) {
     const l=document.createElement("a-light");
     l.setAttribute("type","point"); l.setAttribute("color",col);
-    l.setAttribute("intensity","4"); l.setAttribute("distance","14");
-    l.setAttribute("position","0 8.5 -14");
+    l.setAttribute("intensity","4"); l.setAttribute("distance","14"); l.setAttribute("position","0 8.5 -14");
     scene.appendChild(l);
   }
-
   function spawnPrompt() {
     const bg=document.createElement("a-plane");
     bg.setAttribute("class","clickable"); bg.setAttribute("width","5"); bg.setAttribute("height","1.6");
@@ -346,42 +261,30 @@
     t.setAttribute("position","0 3.05 -14.9"); t.setAttribute("font","https://cdn.aframe.io/fonts/Exo2Bold.fnt");
     scene.appendChild(bg); scene.appendChild(t);
     bg.addEventListener("click",()=>{
-      spawnGLB(); markSalaDone();
+      // ── GUARDAR EN HOTBAR ──
+      const inv = JSON.parse(sessionStorage.getItem("hotbar_v3")||"[]");
+      if (!inv.find(i=>i.sceneId===PICKUP_ID)) {
+        inv.push({ sceneId: PICKUP_ID, src: PICKUP_SRC, label: PICKUP_LABEL });
+        sessionStorage.setItem("hotbar_v3", JSON.stringify(inv));
+      }
+      markSalaDone();
+      spawnGLB();
       bg.setAttribute("visible","false"); t.setAttribute("visible","false");
-      torusGLB.classList.remove("clickable");
       torusGLB.setAttribute("material","wireframe:true; color:#0044ff; emissive:#0044ff; emissiveIntensity:1.5;");
       const sal=document.getElementById("torusSalida");
       sal.setAttribute("material",`wireframe:true; color:${NC}; emissive:${NC}; emissiveIntensity:3;`);
       sal.setAttribute("animation",{property:"rotation",to:"0 360 0",loop:true,dur:3000,easing:"linear"});
+      // Rebuild hotbar si está disponible
+      if (window.buildHotbar) buildHotbar();
     },{once:true});
   }
-
   function spawnGLB() {
     const m=document.createElement("a-entity");
-    m.setAttribute("gltf-model",GLB_SRC); m.setAttribute("position","0 3 -15");
-    m.setAttribute("scale","1 1 1");
+    m.setAttribute("gltf-model",PICKUP_SRC); m.setAttribute("position","0 3 -15");
+    m.setAttribute("scale","0.5 0.5 0.5");
     m.setAttribute("animation","property:rotation; to:0 360 0; loop:true; dur:4000; easing:linear;");
     scene.appendChild(m);
   }
-
-  // A-Frame elements need to be clicked via the scene raycaster
-  // Wire up quiz buttons after scene loads
-  document.querySelector("a-scene").addEventListener("loaded", () => {
-    document.getElementById("btnA").addEventListener("click",()=>answer("a","btnA"));
-    document.getElementById("btnB").addEventListener("click",()=>answer("b","btnB"));
-    document.getElementById("btnC").addEventListener("click",()=>answer("c","btnC"));
-
-    // Hover highlight para respuesta inmediata
-    ["btnA","btnB","btnC"].forEach(id => {
-      const el = document.getElementById(id);
-      el.addEventListener("mouseenter", () => {
-        if (!answering) el.setAttribute("material", `color:#1a001a; emissive:#ff6600; emissiveIntensity:2;`);
-      });
-      el.addEventListener("mouseleave", () => {
-        if (!answering) el.setAttribute("material", `color:#0a000a; emissive:#ff6600; emissiveIntensity:0.6;`);
-      });
-    });
-  }, {once:false});
 </script>
 </body>
 </html>

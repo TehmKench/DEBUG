@@ -1,3 +1,4 @@
+// doors.js
 let unlockedRoom = parseInt(localStorage.getItem("unlockedRoom")) || 1;
 
 AFRAME.registerComponent("door", {
