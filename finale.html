@@ -2,233 +2,323 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>DEBUG - Lobby Neon</title>
-
+<title>FINALE</title>
 <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/c-frame/aframe-effects@master/dist/aframe-effects.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/aframe-extras@7.2.0/dist/aframe-extras.min.js"></script>
-<script src="https://unpkg.com/aframe-environment-component/dist/aframe-environment-component.min.js"></script>
-
-
 <script src="js/player.js"></script>
-<script src="js/doors.js"></script>
-
+<script src="js/hotbar.js"></script>
 <style>
 body { margin:0; overflow:hidden; cursor:none; }
+
+#overlay {
+  position:fixed; inset:0; z-index:9999;
+  background:#000;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  font-family:'Courier New', monospace;
+  gap:10px;
+  transition: opacity 2s;
+}
+#overlay-title {
+  font-size:52px; color:#ffd700;
+  text-shadow: 0 0 40px #ffd700, 0 0 80px #ffd700;
+  letter-spacing:.15em;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+#overlay-sub {
+  font-size:16px; color:#ffffff99;
+  letter-spacing:.3em;
+}
+#overlay-hint {
+  margin-top:24px;
+  font-size:12px; color:#ffffff44;
+  letter-spacing:.2em;
+}
+@keyframes glow {
+  from { text-shadow: 0 0 20px #ffd700; }
+  to   { text-shadow: 0 0 60px #ffd700, 0 0 100px #ffaa00; }
+}
 </style>
 </head>
-
 <body>
 
-<a-scene
-  environment="preset: forest"
-  background="color:#000000"
-  fog="type: exponential; color: #000000; density: 0.015"
-  effects="bloom:true; bloomStrength:1.5; bloomRadius:0.5; bloomThreshold:0.1">
+<!-- PANTALLA INTRO antes de entrar a la escena -->
+<div id="overlay">
+  <div id="overlay-title">VICTORIA</div>
+  <div id="overlay-sub">HAS COMPLETADO EL JUEGO</div>
+  <div id="overlay-hint">— CLICK PARA CONTINUAR —</div>
+</div>
 
-
-
-  <!-- ===================== -->
-  <!-- ASSETS -->
-  <!-- ===================== -->
+<a-scene id="scene"
+         background="color:#000000"
+         fog="type: exponential; color: #000000; density: 0.012"
+         effects="bloom:true; bloomStrength:2; bloomRadius:0.8; bloomThreshold:0.05">
 
   <a-assets>
-    <a-asset-item id="grid" src="assets/90s_vaporwave_neon_grid_animated.glb"></a-asset-item>
-    <audio id="music" src="music.mp3" crossorigin="anonymous"></audio>
+    <a-asset-item id="grid"   src="assets/90s_vaporwave_neon_grid_animated.glb"></a-asset-item>
+    <a-asset-item id="trophy" src="assets/absolute_supremacy_trophy.glb"></a-asset-item>
+    <audio id="music" src="assets/music.mp3" crossorigin="anonymous"></audio>
   </a-assets>
-  <a-asset-item id="mengerMatrix" src="assets/blender_shape_keys_animation_test.glb"></a-asset-item>
-  </a-assets>
-  <a-asset-item id="mengerMatrix2" src="assets/absolute_supremacy_trophy.glb"></a-asset-item>
-  <a-asset-item id="mengerMatrix3" src="assets/gear_with_mechanical_emblem.glb"></a-asset-item>
-  </a-assets>
-  <!-- GRID -->
-  <a-entity class="reactive" gltf-model="#grid" position="0 -2 90"></a-entity>
-  <a-entity class="reactive" gltf-model="#grid" position="-59 -2 90"></a-entity>
-  <a-entity class="reactive" gltf-model="#grid" position="59 -2 90"></a-entity>
+
+  <!-- GRID igual al lobby -->
+  <a-entity class="reactive" gltf-model="#grid" position="0 0 90"></a-entity>
+  <a-entity class="reactive" gltf-model="#grid" position="-59 0 90"></a-entity>
+  <a-entity class="reactive" gltf-model="#grid" position="59 0 90"></a-entity>
   <a-entity class="reactive" gltf-model="#grid" position="0 -22 330"></a-entity>
-  
 
-<a-entity
-  gltf-model="#mengerMatrix2"
-  position="2.5 -3 -20"
-  scale="2 2 2"
-  animation-mixer>
-</a-entity>
-<a-entity
-  gltf-model="#mengerMatrix3"
-  position="0 7.5 -9.7"
-  scale="4 4 4"
-  animation-mixer>
-</a-entity>
+  <!-- SUELO wireframe magenta igual al lobby -->
+  <a-plane rotation="-90 0 0" position="0 0 0" width="60" height="120"
+    material="color:#000; emissive:#000; opacity:1;"></a-plane>
+  <a-plane rotation="-90 0 0" position="0 0.01 0" width="60" height="120"
+    material="wireframe:true; color:#ff00ff; emissive:#ff00ff; emissiveIntensity:1.8;"></a-plane>
 
-  <!-- LUZ AMBIENTAL BASE -->
-  <a-light type="ambient" intensity="1.2" color="#ff00ff"></a-light>
+  <!-- MUROS invisibles -->
+  <a-box position="0 0 0"    width="60" height="0.1" depth="120" visible="false" wall></a-box>
+  <a-box position="-30 5 0"  width="0.5" height="10" depth="120" visible="false" wall></a-box>
+  <a-box position="30 5 0"   width="0.5" height="10" depth="120" visible="false" wall></a-box>
+  <a-box position="0 5 -60"  width="60"  height="10" depth="0.5" visible="false" wall></a-box>
+  <a-box position="0 5 60"   width="60"  height="10" depth="0.5" visible="false" wall></a-box>
 
-  <!-- PLAYER -->
-  <a-entity id="player" position="0 1.6 18" wasd-collision>
-    <a-entity camera="fov: 85"
-              look-controls="pointerLockEnabled: true">
-      <a-cursor color="#00ffff" fuse="false" raycaster="objects: .clickable"></a-cursor>
+  <!-- TUBOS NEON laterales -->
+  <a-cylinder position="-29.8 5 0" radius="0.06" height="120" rotation="90 0 0"
+    material="color:#ff00ff; emissive:#ff00ff; emissiveIntensity:3;"></a-cylinder>
+  <a-cylinder position="29.8 5 0"  radius="0.06" height="120" rotation="90 0 0"
+    material="color:#ff00ff; emissive:#ff00ff; emissiveIntensity:3;"></a-cylinder>
+
+  <!-- LUZ AMBIENTAL base -->
+  <a-light type="ambient" intensity="1" color="#ff00ff"></a-light>
+
+  <!-- FOCO DORADO sobre el trofeo -->
+  <a-light type="point" id="trophy-light"
+           position="0 10 -20"
+           intensity="5" color="#ffd700" distance="25">
+  </a-light>
+  <a-light type="spot"
+           position="0 15 -20" rotation="-90 0 0"
+           intensity="6" color="#ffd700"
+           angle="30" penumbra="0.3" distance="20">
+  </a-light>
+
+  <!-- PEDESTAL -->
+  <!-- Base -->
+  <a-cylinder position="0 0.15 -20" radius="2.5" height="0.3"
+    material="color:#111; emissive:#ffd700; emissiveIntensity:0.5; metalness:0.9; roughness:0.1;">
+  </a-cylinder>
+  <!-- Columna -->
+  <a-cylinder position="0 0.9 -20" radius="1.4" height="1.2"
+    material="color:#222; emissive:#ffd700; emissiveIntensity:0.3; metalness:0.8; roughness:0.2;">
+  </a-cylinder>
+  <!-- Anillo decorativo -->
+  <a-torus position="0 1.5 -20" radius="1.5" radius-tubular="0.06"
+    material="color:#ffd700; emissive:#ffd700; emissiveIntensity:2;">
+  </a-torus>
+
+  <!-- TROFEO — auto-centrado por JS -->
+  <a-entity id="trophy-wrap" position="0 1.55 -20">
+    <a-entity id="trophy-entity"
+      gltf-model="#trophy"
+      scale="1.8 1.8 1.8"
+      rotation="0 0 0">
     </a-entity>
   </a-entity>
 
-  <!-- MUROS -->
-  <a-box position="0 0 0" width="50" height="0.1" depth="100" visible="false" wall></a-box>
-  <a-box position="-20 5 0" width="0.5" height="10" depth="100" visible="false" wall></a-box>
-  <a-box position="20 5 0" width="0.5" height="10" depth="100" visible="false" wall></a-box>
-  <a-box position="0 5 -50" width="50" height="10" depth="0.5" visible="false" wall></a-box>
-  <a-box position="0 5 30" width="50" height="10" depth="0.5" visible="false" wall></a-box>
+  <!-- RAYOS DE LUZ decorativos alrededor del trofeo -->
+  <a-cylinder position="-3 3 -20" radius="0.04" height="8" rotation="0 0 20"
+    material="color:#ffd700; emissive:#ffd700; emissiveIntensity:1.5; opacity:0.3; transparent:true;">
+  </a-cylinder>
+  <a-cylinder position="3 3 -20" radius="0.04" height="8" rotation="0 0 -20"
+    material="color:#ffd700; emissive:#ffd700; emissiveIntensity:1.5; opacity:0.3; transparent:true;">
+  </a-cylinder>
+  <a-cylinder position="-1.5 3 -20" radius="0.03" height="8" rotation="0 0 10"
+    material="color:#ffffff; emissive:#ffffff; emissiveIntensity:1; opacity:0.2; transparent:true;">
+  </a-cylinder>
+  <a-cylinder position="1.5 3 -20" radius="0.03" height="8" rotation="0 0 -10"
+    material="color:#ffffff; emissive:#ffffff; emissiveIntensity:1; opacity:0.2; transparent:true;">
+  </a-cylinder>
 
-  
+  <!-- TEXTO VICTORIA -->
+  <a-text id="txt-title"
+          position="0 9 -20"
+          align="center" width="16"
+          color="#ffd700"
+          font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"
+          value="VICTORIA"
+          animation="property:material.opacity; from:0.5; to:1; dir:alternate; loop:true; dur:1500; easing:easeInOutSine">
+  </a-text>
+  <a-text id="txt-sub"
+          position="0 7.8 -20"
+          align="center" width="11"
+          color="#ffffff"
+          font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"
+          value="HAS COMPLETADO EL JUEGO">
+  </a-text>
+
+  <!-- BOTÓN SALIR — delante del trofeo, altura de ojos -->
+  <a-entity position="0 1.6 -12">
+    <a-box id="btn-salir" class="clickable"
+           width="3.5" height="0.8" depth="0.1"
+           material="color:#000; emissive:#ffd700; emissiveIntensity:2; opacity:0.95; transparent:true;">
+    </a-box>
+    <a-text position="0 0 0.08"
+            align="center" width="3.2"
+            color="#ffd700"
+            font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"
+            value="[ SALIR ]">
+    </a-text>
+  </a-entity>
+
+  <!-- PLAYER — aparece lejos del trofeo mirando hacia él -->
+  <a-entity id="player" position="0 1.6 15" wasd-collision>
+    <a-entity camera="fov: 85"
+              rotation="0 180 0"
+              look-controls="pointerLockEnabled: true">
+      <a-cursor color="#ffd700" fuse="false" raycaster="objects: .clickable"></a-cursor>
+    </a-entity>
+  </a-entity>
 
 </a-scene>
 
 <script>
+/* ── OVERLAY INTRO ───────────────────────────────────── */
+const overlay = document.getElementById("overlay");
+let overlayDone = false;
 
-/* ========================= */
-/* AUDIO REACTIVO COMPLETO */
-/* ========================= */
+document.addEventListener("click", () => {
+  if (overlayDone) return;
+  overlayDone = true;
+  overlay.style.opacity = "0";
+  setTimeout(() => { overlay.style.display = "none"; }, 2000);
 
-const sceneEl = document.getElementById("scene");
-const audio = document.getElementById("music");
-const reactiveModels = document.querySelectorAll(".reactive");
-
-const AudioContext = window.AudioContext || window.webkitAudioContext;
-const audioCtx = new AudioContext();
-const analyser = audioCtx.createAnalyser();
-const source = audioCtx.createMediaElementSource(audio);
-
-source.connect(analyser);
-analyser.connect(audioCtx.destination);
-
-analyser.fftSize = 512;
-const dataArray = new Uint8Array(analyser.frequencyBinCount);
-
-window.addEventListener("click", () => {
-  audioCtx.resume();
-  audio.play();
+  // Arrancar audio
+  if (!window._ac) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    window._ac = new AC();
+    const audio = document.getElementById("music");
+    window._ac.createMediaElementSource(audio).connect(window._ac.destination);
+    window._ac.resume();
+    audio.play();
+  }
 }, { once: true });
 
+/* ── AUDIO REACTIVO ──────────────────────────────────── */
+const sceneEl        = document.getElementById("scene");
+const reactiveModels = document.querySelectorAll(".reactive");
 let smoothBass = 0;
 
 function reactiveLoop() {
-
   requestAnimationFrame(reactiveLoop);
-
-  analyser.getByteFrequencyData(dataArray);
-
+  if (!window._analyser) return;
+  window._analyser.getByteFrequencyData(window._dataArray);
   let bass = 0;
-  for(let i=0; i<40; i++){
-    bass += dataArray[i];
-  }
-  bass = bass / 40;
-
-  let normalized = bass / 255;
-
-  // Suavizado real
-  smoothBass += (normalized - smoothBass) * 0.08;
-
-  /* ========================= */
-  /* BACKGROUND (PARTE DESDE NEGRO) */
-  /* ========================= */
-
-  let lightness = smoothBass * 18; 
-  // Rango: 0% → 18%
-  // 0 = negro absoluto
-
-  const bgColor = `hsl(300, 80%, ${lightness}%)`;
-
+  for (let i = 0; i < 40; i++) bass += window._dataArray[i];
+  bass /= 40;
+  smoothBass += (bass / 255 - smoothBass) * 0.08;
+  const bgColor = `hsl(300, 80%, ${smoothBass * 15}%)`;
   sceneEl.setAttribute("background", "color", bgColor);
   sceneEl.setAttribute("fog", "color", bgColor);
-
-  /* ========================= */
-  /* EMISSIVE EN MODELOS (SIN BLANCO) */
-  /* ========================= */
-
-  reactiveModels.forEach((model)=>{
-
-    model.object3D.traverse((node)=>{
-
-      if(node.material){
-
-        if(!node.material.originalEmissive){
+  reactiveModels.forEach(model => {
+    model.object3D.traverse(node => {
+      if (node.material) {
+        if (!node.material.originalEmissive)
           node.material.originalEmissive = node.material.emissive.clone();
-        }
-
         node.material.emissive.copy(node.material.originalEmissive);
-
-        let emissiveIntensity = 0.5 + (smoothBass * 2.0);
-
-        // LIMITE DURO PARA EVITAR BLANCO
-        if(emissiveIntensity > 2.5){
-          emissiveIntensity = 2.5;
-        }
-
-        node.material.emissiveIntensity = emissiveIntensity;
+        let ei = 0.5 + smoothBass * 2.0;
+        if (ei > 2.5) ei = 2.5;
+        node.material.emissiveIntensity = ei;
       }
-
     });
-
   });
-
 }
-
 reactiveLoop();
 
-
-/* ========================= */
-/* MATRIX RAIN (ORIGINAL) */
-/* ========================= */
-
-const scene = document.querySelector("a-scene");
-
-function spawnMatrixColumn(){
-
-  const x = (Math.random()*60) - 30;
-  const z = (Math.random()*-90);
-
-  for(let i=0;i<40;i++){
-
-    const char = document.createElement("a-entity");
-    const symbols = "01<>/{}[];:+=-*#%&";
-    const randomSymbol = symbols[Math.floor(Math.random()*symbols.length)];
-
-    char.setAttribute("text", {
-      value: randomSymbol,
-      color: "#00ff88",
-      align: "center",
-      width: 4
-    });
-
-    char.setAttribute("position", {
-      x: x,
-      y: 30 + (i * 1.5),
-      z: z
-    });
-
-    char.setAttribute("scale","1.8 1.8 1.8");
-
-    char.setAttribute("animation", {
-      property: "position",
-      to: `${x} -20 ${z}`,
-      dur: 7000,
-      easing: "linear"
-    });
-
-    scene.appendChild(char);
-
-    setTimeout(()=>{
-      if(char.parentNode){
-        scene.removeChild(char);
-      }
-    }, 7500);
-
+document.addEventListener("click", () => {
+  if (window._ac && !window._analyser) {
+    const audio = document.getElementById("music");
+    window._analyser = window._ac.createAnalyser();
+    // reconectar con analyser
+    window._analyser.fftSize = 512;
+    window._dataArray = new Uint8Array(window._analyser.frequencyBinCount);
   }
+});
 
+/* ── MATRIX RAIN dorado ──────────────────────────────── */
+const scene = document.querySelector("a-scene");
+function spawnMatrixColumn() {
+  const x = Math.random() * 60 - 30;
+  const z = Math.random() * -90;
+  for (let i = 0; i < 40; i++) {
+    const char = document.createElement("a-entity");
+    const syms = "01<>/{}[];:+=-*#%&";
+    char.setAttribute("text", { value: syms[Math.floor(Math.random() * syms.length)], color: "#ffd700", align: "center", width: 4 });
+    char.setAttribute("position", { x, y: 30 + i * 1.5, z });
+    char.setAttribute("scale", "1.8 1.8 1.8");
+    char.setAttribute("animation", { property: "position", to: `${x} -20 ${z}`, dur: 7000, easing: "linear" });
+    scene.appendChild(char);
+    setTimeout(() => { if (char.parentNode) scene.removeChild(char); }, 7500);
+  }
 }
-
 setInterval(spawnMatrixColumn, 200);
 
+/* ── PARTÍCULAS CELEBRACIÓN ──────────────────────────── */
+function spawnParticle() {
+  const p = document.createElement("a-sphere");
+  const cols = ["#ffd700","#ff00ff","#00ffff","#ffffff","#ffaa00"];
+  const col = cols[Math.floor(Math.random() * cols.length)];
+  const x = (Math.random() - 0.5) * 30;
+  const z = -20 + (Math.random() - 0.5) * 10;
+  p.setAttribute("radius", (Math.random() * 0.1 + 0.04).toFixed(2));
+  p.setAttribute("position", `${x} 0.5 ${z}`);
+  p.setAttribute("material", `color:${col}; emissive:${col}; emissiveIntensity:4; transparent:true; opacity:1;`);
+  p.setAttribute("animation__up",   { property:"position", to:`${x} ${6+Math.random()*6} ${z}`, dur:2000+Math.random()*1000, easing:"easeOutQuad" });
+  p.setAttribute("animation__fade", { property:"material.opacity", to:0, dur:2500, easing:"easeInQuad" });
+  scene.appendChild(p);
+  setTimeout(() => { if (p.parentNode) scene.removeChild(p); }, 3000);
+}
+
+/* ── TROFEO AUTO-CENTER ──────────────────────────────── */
+document.querySelector("a-scene").addEventListener("loaded", () => {
+  const trophyEl = document.getElementById("trophy-entity");
+  const wrap     = document.getElementById("trophy-wrap");
+
+  trophyEl.addEventListener("model-loaded", () => {
+    setTimeout(() => {
+      const box = new THREE.Box3().setFromObject(trophyEl.object3D);
+      const size = new THREE.Vector3();
+      const ctr  = new THREE.Vector3();
+      box.getSize(size);
+      box.getCenter(ctr);
+      // Mueve el modelo para que su base quede en y=0 del wrap
+      trophyEl.object3D.position.y = -(ctr.y - size.y / 2);
+      // Textos encima
+      const top = size.y + wrap.object3D.position.y;
+      document.getElementById("txt-title").setAttribute("position", `0 ${top + 3.5} -20`);
+      document.getElementById("txt-sub").setAttribute("position",   `0 ${top + 2.3} -20`);
+    }, 200);
+  });
+
+  // Partículas solo cuando overlay cerrado
+  setTimeout(() => setInterval(spawnParticle, 60), 2500);
+
+  /* ── BOTÓN ─────────────────────────────────────────── */
+  const btn = document.getElementById("btn-salir");
+  btn.addEventListener("mouseenter", () => {
+    btn.setAttribute("material","color:#1a1600; emissive:#ffd700; emissiveIntensity:5; opacity:1; transparent:true;");
+  });
+  btn.addEventListener("mouseleave", () => {
+    btn.setAttribute("material","color:#000; emissive:#ffd700; emissiveIntensity:2; opacity:0.95; transparent:true;");
+  });
+  btn.addEventListener("click", () => {
+    window.close();
+    setTimeout(() => {
+      document.body.innerHTML = `
+        <div style="position:fixed;inset:0;background:#000;display:flex;flex-direction:column;
+          align-items:center;justify-content:center;font-family:'Courier New',monospace;gap:28px;">
+          <div style="font-size:72px;color:#ffd700;text-shadow:0 0 50px #ffd700;letter-spacing:.15em;">FIN</div>
+          <div style="font-size:14px;color:#ffffff66;letter-spacing:.3em;">GRACIAS POR JUGAR</div>
+        </div>`;
+    }, 300);
+  });
+});
 </script>
 
 </body>

@@ -53,35 +53,27 @@ body { margin:0; overflow:hidden; cursor:none; }
   <a-box position="0 5 -50"  width="50"  height="10" depth="0.5" visible="false" wall></a-box>
   <a-box position="0 5 35"   width="50"  height="10" depth="0.5" visible="false" wall></a-box>
 
-  <!-- PUERTAS -->
+  <!-- PUERTAS 1-4 -->
   <a-box id="puerta1" class="clickable" position="-6 2 10"  width="3" height="4" depth="0.5"></a-box>
   <a-box id="puerta2" class="clickable" position="-6 2 -5"  width="3" height="4" depth="0.5"></a-box>
   <a-box id="puerta3" class="clickable" position="6 2 10"   width="3" height="4" depth="0.5"></a-box>
   <a-box id="puerta4" class="clickable" position="6 2 -5"   width="3" height="4" depth="0.5"></a-box>
-  <a-box id="puerta5" class="clickable" position="0 2 25"   width="3" height="4" depth="0.5"></a-box>
 
-  <!-- LABELS SALAS -->
+  <!-- PUERTA 5 — gestionada por hotbar.js → nivel5.html -->
+  <a-box id="puerta5" position="0 2 25" width="3" height="4" depth="0.5"></a-box>
+
+  <!-- LABELS -->
   <a-text id="label1" position="-6 4.8 10.4"  align="center" width="4" color="#00ffff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="SALA 01"></a-text>
   <a-text id="label2" position="-6 4.8 -4.6"  align="center" width="4" color="#ff6600" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="SALA 02"></a-text>
   <a-text id="label3" position="6 4.8 10.4"   align="center" width="4" color="#00ff44" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="SALA 03"></a-text>
   <a-text id="label4" position="6 4.8 -4.6"   align="center" width="4" color="#ff0044" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="SALA 04"></a-text>
+  <a-text id="label5" position="0 4.8 25.4"   align="center" width="4" color="#ff00ff" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="SALA FINAL"></a-text>
+
+  <!-- LOCKS -->
   <a-text id="lock2"  position="-6 2.8 -4.6"  align="center" width="3" color="#ff0000" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="[ BLOQUEADA ]"></a-text>
   <a-text id="lock3"  position="6 2.8 10.4"   align="center" width="3" color="#ff0000" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="[ BLOQUEADA ]"></a-text>
   <a-text id="lock4"  position="6 2.8 -4.6"   align="center" width="3" color="#ff0000" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="[ BLOQUEADA ]"></a-text>
-
-  <!-- ══════════════════════════════════════════
-       PICKUP ESCONDIDO — Trophy detrás de puerta5
-       puerta5 está en position="0 2 25"
-       El trophy queda justo detrás, en z=26.5
-       El jugador tiene que rodear o acercarse mucho
-       ══════════════════════════════════════════ -->
-  <a-entity
-    id="pickup-trophy"
-    gltf-model="assets/absolute_supremacy_trophy.glb"
-    scale="0.35 0.35 0.35"
-    position="0 1.2 26.5"
-    class="clickable">
-  </a-entity>
+  <a-text id="lockP5" position="0 2.8 25.4"   align="center" width="3" color="#ff0000" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt" value="[ NECESITAS 4 ITEMS ]"></a-text>
 
 </a-scene>
 
@@ -95,35 +87,24 @@ const AudioContext = window.AudioContext || window.webkitAudioContext;
 const audioCtx     = new AudioContext();
 const analyser     = audioCtx.createAnalyser();
 const source       = audioCtx.createMediaElementSource(audio);
-
 source.connect(analyser);
 analyser.connect(audioCtx.destination);
 analyser.fftSize = 512;
 const dataArray = new Uint8Array(analyser.frequencyBinCount);
 
-window.addEventListener("click", () => {
-  audioCtx.resume();
-  audio.play();
-}, { once: true });
+window.addEventListener("click", () => { audioCtx.resume(); audio.play(); }, { once: true });
 
 let smoothBass = 0;
-
 function reactiveLoop() {
   requestAnimationFrame(reactiveLoop);
   analyser.getByteFrequencyData(dataArray);
-
   let bass = 0;
   for (let i = 0; i < 40; i++) bass += dataArray[i];
   bass /= 40;
-
-  const normalized = bass / 255;
-  smoothBass += (normalized - smoothBass) * 0.08;
-
-  const lightness = smoothBass * 18;
-  const bgColor   = `hsl(300, 80%, ${lightness}%)`;
+  smoothBass += (bass / 255 - smoothBass) * 0.08;
+  const bgColor = `hsl(300, 80%, ${smoothBass * 18}%)`;
   sceneEl.setAttribute("background", "color", bgColor);
   sceneEl.setAttribute("fog",        "color", bgColor);
-
   reactiveModels.forEach(model => {
     model.object3D.traverse(node => {
       if (node.material) {
@@ -141,7 +122,6 @@ reactiveLoop();
 
 /* ── MATRIX RAIN ─────────────────────────────────────── */
 const scene = document.querySelector("a-scene");
-
 function spawnMatrixColumn() {
   const x = Math.random() * 60 - 30;
   const z = Math.random() * -90;
@@ -160,7 +140,7 @@ setInterval(spawnMatrixColumn, 200);
 </script>
 
 <script>
-/* ── PROGRESIÓN DE SALAS ─────────────────────────────── */
+/* ── PROGRESIÓN SALAS 1-4 ────────────────────────────── */
 const SALAS_CFG = [
   { id:"puerta1", req:null,    dest:"nivel1.html", lockEl:null,    color:"#00ffff" },
   { id:"puerta2", req:"sala1", dest:"nivel2.html", lockEl:"lock2", color:"#ff6600" },
@@ -183,18 +163,14 @@ document.querySelector("a-scene").addEventListener("loaded", () => {
         "color:#220000; emissive:#ff0000; emissiveIntensity:0.5; opacity:0.6; transparent:true;");
       puerta.classList.remove("clickable");
       puerta.addEventListener("click", () => {
-        puerta.setAttribute("material", "color:#440000; emissive:#ff0000; emissiveIntensity:2.5; opacity:0.8; transparent:true;");
+        puerta.setAttribute("material","color:#440000; emissive:#ff0000; emissiveIntensity:2.5; opacity:0.8; transparent:true;");
         setTimeout(() =>
-          puerta.setAttribute("material", "color:#220000; emissive:#ff0000; emissiveIntensity:0.5; opacity:0.6; transparent:true;")
+          puerta.setAttribute("material","color:#220000; emissive:#ff0000; emissiveIntensity:0.5; opacity:0.6; transparent:true;")
         , 350);
       });
     }
   });
-
-  // puerta5 — sin destino definido aún, solo decorativa
-  const p5 = document.getElementById("puerta5");
-  p5.setAttribute("material",
-    "color:#ff00ff22; emissive:#ff00ff; emissiveIntensity:1.2; opacity:0.6; transparent:true;");
+  // puerta5 la gestiona checkPuerta5() dentro de hotbar.js
 });
 </script>
 

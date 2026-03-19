@@ -1,24 +1,33 @@
 /* ============================================================
-   hotbar.js — 5 slots, se llena recogiendo items en niveles
-   ============================================================
-   Mapa de items:
-   pickup-final-key   → nivel 1  (final_key.glb)
-   pickup-keycard     → nivel 2  (key_card_lvl_5.glb)
-   pickup-rkey        → nivel 3  (r_key_-_the_binding_of_isaac.glb)
-   pickup-chest-key   → nivel 4  (big_chest_key.glb)
-   pickup-trophy      → lobby    (absolute_supremacy_trophy.glb, escondido en puerta5)
+   hotbar.js — 5 slots
+   pickup-final-key  → nivel1.html
+   pickup-keycard    → nivel2.html
+   pickup-rkey       → nivel3.html
+   pickup-chest-key  → nivel4.html
+   pickup-trophy     → finale.html  (se añade al ganar el boss)
+
+   puerta5 se desbloquea automáticamente cuando el jugador
+   tiene los 4 items de los niveles → redirige a nivel5.html
    ============================================================ */
 
 const PICKUP_DEFS = [
-  { sceneId: "pickup-final-key",  src: "assets/final_key.glb",                          label: "Final Key"  },
-  { sceneId: "pickup-keycard",    src: "assets/key_card_lvl_5.glb",                     label: "Keycard"    },
-  { sceneId: "pickup-rkey",       src: "assets/r_key_-_the_binding_of_isaac.glb",       label: "R Key"      },
-  { sceneId: "pickup-chest-key",  src: "assets/big_chest_key.glb",                      label: "Chest Key"  },
-  { sceneId: "pickup-trophy",     src: "assets/absolute_supremacy_trophy.glb",          label: "Trophy"     },
+  { sceneId: "pickup-final-key",  src: "assets/final_key.glb",                      label: "Final Key"  },
+  { sceneId: "pickup-keycard",    src: "assets/key_card_lvl_5.glb",                 label: "Keycard"    },
+  { sceneId: "pickup-rkey",       src: "assets/r_key_-_the_binding_of_isaac.glb",   label: "R Key"      },
+  { sceneId: "pickup-chest-key",  src: "assets/big_chest_key.glb",                  label: "Chest Key"  },
+  { sceneId: "pickup-trophy",     src: "assets/absolute_supremacy_trophy.glb",      label: "Trophy"     },
 ];
 
 const MAX_SLOTS   = 5;
 const STORAGE_KEY = "hotbar_v3";
+
+// Los 4 items que desbloquean puerta5
+const PUERTA5_REQ = [
+  "pickup-final-key",
+  "pickup-keycard",
+  "pickup-rkey",
+  "pickup-chest-key"
+];
 
 function loadInventory() {
   try { return JSON.parse(sessionStorage.getItem(STORAGE_KEY)) || []; }
@@ -149,7 +158,7 @@ function showMsg(text, color) {
   msgEl.style.boxShadow   = `0 0 12px ${color}88`;
   msgEl.style.opacity     = "1";
   clearTimeout(msgTimer);
-  msgTimer = setTimeout(() => { msgEl.style.opacity = "0"; }, 1800);
+  msgTimer = setTimeout(() => { msgEl.style.opacity = "0"; }, 2000);
 }
 
 /* ── BUILD HOTBAR ─────────────────────────────────────── */
@@ -247,58 +256,78 @@ function renderGLB(slotEl, src) {
   })();
 }
 
-/* ── ATTACH PICKUPS EN ESCENA A-FRAME ───────────────── */
+/* ── ATTACH PICKUPS EN ESCENA ────────────────────────── */
 function attachPickups() {
   PICKUP_DEFS.forEach(def => {
     const el = document.getElementById(def.sceneId);
     if (!el) return;
 
-    // Ya recogido → ocultar
     if (inventory.find(i => i.sceneId === def.sceneId)) {
       el.setAttribute("visible", "false");
       return;
     }
 
-    // Animación flotante
     const pos = el.getAttribute("position") || { x: 0, y: 1, z: 0 };
     el.setAttribute("animation__float", {
-      property: "position",
-      dir:      "alternate",
-      dur:      1800,
-      loop:     true,
-      easing:   "easeInOutSine",
-      from:     `${pos.x} ${pos.y} ${pos.z}`,
-      to:       `${pos.x} ${parseFloat(pos.y) + 0.3} ${pos.z}`
+      property: "position", dir: "alternate", dur: 1800, loop: true, easing: "easeInOutSine",
+      from: `${pos.x} ${pos.y} ${pos.z}`,
+      to:   `${pos.x} ${parseFloat(pos.y) + 0.3} ${pos.z}`
     });
-
-    // Rotación continua
     el.setAttribute("animation__spin", {
-      property: "rotation",
-      to:       "0 360 0",
-      dur:      4000,
-      loop:     true,
-      easing:   "linear"
+      property: "rotation", to: "0 360 0", dur: 4000, loop: true, easing: "linear"
     });
-
     el.classList.add("clickable");
 
     el.addEventListener("click", () => {
-      if (inventory.length >= MAX_SLOTS) {
-        showMsg("INVENTARIO LLENO", "#ff0000");
-        return;
-      }
+      if (inventory.length >= MAX_SLOTS) { showMsg("INVENTARIO LLENO", "#ff0000"); return; }
       if (inventory.find(i => i.sceneId === def.sceneId)) return;
-
       inventory.push({ sceneId: def.sceneId, src: def.src, label: def.label });
       saveInventory();
       buildHotbar();
-
       el.setAttribute("visible", "false");
       el.classList.remove("clickable");
-
       showMsg("+ " + def.label + " RECOGIDO", "#ff00ff");
     });
   });
+}
+
+/* ── PUERTA 5 ────────────────────────────────────────── */
+function checkPuerta5() {
+  const p5 = document.getElementById("puerta5");
+  if (!p5) return;
+
+  const hasAll = PUERTA5_REQ.every(id => inventory.find(i => i.sceneId === id));
+
+  if (hasAll) {
+    // Desbloqueada — magenta pulsante, clickable → nivel5.html
+    p5.setAttribute("material",
+      "color:#ff00ff22; emissive:#ff00ff; emissiveIntensity:2.5; opacity:0.85; transparent:true;");
+    p5.setAttribute("animation__pulse", {
+      property: "material.emissiveIntensity",
+      from: 1.5, to: 4, dir: "alternate", loop: true, dur: 900, easing: "easeInOutSine"
+    });
+    p5.classList.add("clickable");
+    p5.addEventListener("click", () => { window.location.href = "nivel5.html"; });
+
+    const lockP5 = document.getElementById("lockP5");
+    if (lockP5) lockP5.setAttribute("visible", "false");
+
+    showMsg("SALA FINAL DESBLOQUEADA", "#ff00ff");
+  } else {
+    // Bloqueada — rojo apagado, muestra cuántos faltan al hacer click
+    p5.setAttribute("material",
+      "color:#220000; emissive:#ff0000; emissiveIntensity:0.5; opacity:0.6; transparent:true;");
+    p5.classList.remove("clickable");
+
+    p5.addEventListener("click", () => {
+      const missing = PUERTA5_REQ.filter(id => !inventory.find(i => i.sceneId === id)).length;
+      showMsg("FALTAN " + missing + " ITEMS", "#ff0000");
+      p5.setAttribute("material","color:#440000; emissive:#ff0000; emissiveIntensity:2.5; opacity:0.8; transparent:true;");
+      setTimeout(() =>
+        p5.setAttribute("material","color:#220000; emissive:#ff0000; emissiveIntensity:0.5; opacity:0.6; transparent:true;")
+      , 350);
+    });
+  }
 }
 
 /* ── API PÚBLICA ─────────────────────────────────────── */
@@ -308,12 +337,22 @@ window.Hotbar = {
     const idx = inventory.findIndex(i => i.sceneId === sceneId);
     if (idx === -1) return false;
     const item = inventory.splice(idx, 1)[0];
-    saveInventory();
-    buildHotbar();
+    saveInventory(); buildHotbar();
     showMsg("USADO: " + item.label, "#ffaa00");
     return true;
   },
   getAll() { return [...inventory]; },
+  // Llamado desde nivel5.html al ganar el boss
+  addTrophy() {
+    if (inventory.find(i => i.sceneId === "pickup-trophy")) return;
+    inventory.push({
+      sceneId: "pickup-trophy",
+      src:     "assets/absolute_supremacy_trophy.glb",
+      label:   "Trophy"
+    });
+    saveInventory();
+    buildHotbar();
+  }
 };
 
 /* ── INIT ────────────────────────────────────────────── */
@@ -321,8 +360,8 @@ function init() {
   buildHotbar();
   const sceneEl = document.querySelector("a-scene");
   if (sceneEl) {
-    if (sceneEl.hasLoaded) attachPickups();
-    else sceneEl.addEventListener("loaded", attachPickups);
+    if (sceneEl.hasLoaded) { attachPickups(); checkPuerta5(); }
+    else sceneEl.addEventListener("loaded", () => { attachPickups(); checkPuerta5(); });
   }
 }
 
