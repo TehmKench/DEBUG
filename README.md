@@ -5,7 +5,7 @@
 ![Estado](https://img.shields.io/badge/estado-%20finalizado-green?style=for-the-badge)
 ![Versión](https://img.shields.io/badge/versión-7.4.0-blue?style=for-the-badge)
 
-> https://tehmkench.github.io/DEBUG/
+ https://tehmkench.github.io/DEBUG/
 
 </div>
 
